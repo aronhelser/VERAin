@@ -63,6 +63,20 @@ def quadToFullMap(a, symmetry):
     full = bottom[:0:-1] + bottom
   return full
 
+# return an array of values from a given token list
+def extract_array(toks, inSlice=slice(0, None)):
+  return flatten(toks)[inSlice]
+
+# Given a set of tokens, see
+def tag_used_in(toks, keyList):
+  # source = set(flatten(toks))
+  # the card's tag is the first value
+  tag = str(toks[0])
+  compare = set(keyList)
+  if tag in compare:
+    return True
+  return False
+
 # extract values from token lists:
 
 def copy_value(toks, index=0):
@@ -144,3 +158,10 @@ def core_map(toks, core_size, symmetry="rot"):
 
 def assembly_map(toks, num_pins):
   return core_map(toks[1:], num_pins)
+
+# what symbols are used in this map? Includes empty tokens, like '-' or '0'
+def extract_map_cells(toks, start):
+  vals = extract_array(toks, slice(start, None))
+  uniqueVals = set(vals)
+  # need to make sure everything is a string, not an integer.
+  return set([str(x) for x in uniqueVals])

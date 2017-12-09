@@ -2,6 +2,8 @@ from __future__ import absolute_import, division, print_function
 
 import pyparsing as pp
 import os, argparse
+# import Utils.flatten
+
 from Templates.CASEID import CASEID
 from Templates.STATE import STATE
 from Templates.CORE import CORE
@@ -145,15 +147,18 @@ class VeraInConverter(object):
     # some cards need info from a different card - like a map needs a size.
     # extract those cards that referenced by another card
     def extractRefParams(self, cards, paramDict):
-        if "refs" in paramDict or not "_refParams" in paramDict:
+        if "refs" in paramDict:  # or not "_refParams" in paramDict:
             # already done, or nothing to do
             return False
+        refList = paramDict["_refParams"] if "_refParams" in paramDict else []
         refParams = {}
         for card in cards:
             paramName = card[0]
             # _refParams is a card-name list, like ["npins", "foo"]
-            if paramName in paramDict["_refParams"]:
+            if paramName in refList:
                 refParams[str(card[0])] = card[1]
+            # Second kind of ref - _output may have _refParam, handled
+            # during outputSingleCard
         paramDict["_refs"] = refParams
         return True
 
@@ -161,14 +166,16 @@ class VeraInConverter(object):
         if "refs" in paramDict:
             del paramDict["_refs"]
 
-    # A card says it wants to use a different card's value by including a "ref:foo" arg
+    # A card says it wants to use a different card's value by including a "ref:foo:index" or "ref:foo_array" arg
     # in it's output _value list.
     def replaceRefArgs(self, argList, refs):
         for i, arg in enumerate(argList):
             if type(arg) == str and arg[0:4] == "ref:":
-                key = arg[4:]
-                # TODO taking the first value of the card - will need to get whole array for maps.
-                argList[i] = refs[key][0]
+                argSplit = arg.split(":")
+                key = argSplit[1]
+                # import ipdb; ipdb.set_trace()
+                # taking the indicated value of the card there's a second colon, else get whole array for maps.
+                argList[i] = refs[key][int(argSplit[2])] if len(argSplit) == 3 else refs[key]
 
     def outputParam(self, name, ptype, value):
         self.outList.append('%s<Parameter name="%s" type="%s" value="%s"/>' % (
@@ -195,21 +202,49 @@ class VeraInConverter(object):
                     self.outputParam( outName, outType, genValueList[0](card[1], *genValueList[1:]))
                 else:
                     self.outputParam( outName, outType, outSpec["_value"](card[1]))
+                # see if we should add to refs for this output
+                if refs and "_refParam" in outSpec:
+                    genRefList = outSpec["_refParam"]
+                    # add ref under the output name, not the card name.
+                    newRef = genRefList[0](card[1], *genRefList[1:])
+                    if not outName in refs:
+                        refs[outName] = newRef
+                    elif type(refs[outName]) is set:
+                        refs[outName] |= newRef
+                    else:
+                        print("Unhandled combination, replacing ", refs[outName])
+                        refs[outName] = newRef
+
+                    print("GENREF", outName, refs[str(outName)])
             else:
                 print("TODO", outName, outSpec["_pltype"])
+
+    # Should we output this card? Does it have a "_condition" that needs to be true?
+    def shouldOutputCard(self, card, spec, paramDict, refs):
+        if "_condition" in spec:
+            # set up a utility method which decides about this card.
+            conditionList = spec["_condition"][:]
+            # there should be args that need to be replaced with "_refs"
+            if refs:
+                self.replaceRefArgs(conditionList, refs)
+            return conditionList[0](card[1], *conditionList[1:])
+
+        return True
 
     # Output a list of lists, with the inner lists derived from a single input card.
     def outputCardList(self, listCards, paramDict, refs):
         paramName = listCards[0][0]
         if paramName in paramDict["_content"]:
             spec = paramDict["_content"][paramName]
+            # outer list, like ASSEMBLIES or CONTROLS
             self.outputListStart(spec["_name"])
             for card in listCards:
                 listKey = card[1][0]
                 listName = spec["_listName"] % str(listKey)
-                self.outputListStart(listName)
-                self.outputSingleCard(card, spec, paramName, refs)
-                self.outputListEnd(listName)
+                if self.shouldOutputCard(card, spec, paramDict, refs):
+                    self.outputListStart(listName)
+                    self.outputSingleCard(card, spec, paramName, refs)
+                    self.outputListEnd(listName)
 
             self.outputListEnd(spec["_name"])
 
@@ -244,6 +279,11 @@ class VeraInConverter(object):
             else:
                 print("TODO", paramName, card[1][0] )
 
+        # if we're done and we still have a card list, output it.
+        if listCards:
+            self.outputCardList(listCards, paramDict, refs)
+
+
     # Start and end a list, sets indent for contents.
     def outputListStart(self, name):
         self.outList.append('%s<ParameterList name="%s">' % (" " * self.indent, name))
@@ -252,15 +292,25 @@ class VeraInConverter(object):
         self.indent -= 2
         self.outList.append('%s</ParameterList>' % (" " * self.indent))
 
-    def outputSection(self, section, inSectionName=None):
+    def outputSection(self, section, inSectionName=None, ordered=None):
         sectionName = inSectionName if inSectionName else section[0]
 
         paramDict = VeraInConverter.sectionNames[section[0]]
+        # if we are called outside outputCellSection (like for CORE), add our own refs
         addedRefs = self.extractRefParams(section, paramDict)
         cardList = section[1:]
         # import ipdb; ipdb.set_trace()
         self.outputListStart(sectionName)
+
+        if ordered:
+            orderedCards = []
+            for key in ordered:
+                orderedCards.extend([card for card in cardList if card[0] == key])
+            cardList = [card for card in cardList if card[0] not in ordered]
+            self.outputCards(orderedCards, paramDict)
+
         self.outputCards(cardList, paramDict)
+
         self.outputListEnd(sectionName)
         if addedRefs:
             self.removeRefParams(paramDict)
@@ -278,9 +328,7 @@ class VeraInConverter(object):
         for outerSection in sectionList:
             # First, extract cards (like 'axial') which can trigger a section
             sectionParams = self.extractSectionParams(outerSection, paramDict)
-            # Next, extract cards that might be referenced by other cards
-            self.extractRefParams(outerSection, paramDict)
-            # this cardlist includes all the 'axial' cards, need to mark current
+            # this cardlist includes all the 'axial' cards, need to mark one current
             cardList = outerSection[1:]
             # now loop over output groups
             for sectionCard in sectionParams:
@@ -288,10 +336,16 @@ class VeraInConverter(object):
                 paramDict["_section"] = sectionCard
                 sectionKey = sectionCard[1][0]
                 sectionName = paramDict["_sectionName"] % str(sectionKey)
-                self.outputSection(outerSection, sectionName)
+                # Extract cards that might be referenced by other cards
+                self.extractRefParams(outerSection, paramDict)
+
+                ordered = paramDict["_order"] if "_order" in paramDict else None
+                self.outputSection(outerSection, sectionName, ordered)
+
+                # make sure we remove section-specific refs.
+                self.removeRefParams(paramDict)
 
             del paramDict["_section"]
-            self.removeRefParams(paramDict)
 
         self.outputListEnd(groupName)
 
@@ -351,8 +405,8 @@ class VeraInConverter(object):
         # except Exception as err:
         #     print(err)
 
-        print("\n".join(self.outList))
-        print()
+        # print("\n".join(self.outList))
+        print("Done")
         return tokens
 
     @staticmethod

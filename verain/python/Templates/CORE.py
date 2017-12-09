@@ -235,7 +235,7 @@ CORE = {
           "_type": "string",
           # "_do":
           #   - coremapmap CORE/$size,CORE/@core_shape,CORE/@assm_map,CORE/$bc_sym
-          "_value": [core_map, "ref:size"],
+          "_value": [core_map, "ref:size:0"],
         }
       ]
     },
@@ -246,7 +246,7 @@ CORE = {
           "_type": "int",
           # "_do":
           #   - coremapmap CORE/$size,CORE/@core_shape,CORE/@rotate_map,CORE/$bc_sym,expand=>0,ignore=>0
-          "_value": [core_map, "ref:size"],
+          "_value": [core_map, "ref:size:0"],
         }
       ]
     },
@@ -257,7 +257,7 @@ CORE = {
           "_type": "string",
           # "_do":
           #   - coremapmap CORE/$size,CORE/@core_shape,CORE/@insert_map,CORE/$bc_sym
-          "_value": [core_map, "ref:size"],
+          "_value": [core_map, "ref:size:0"],
         }
       ]
     },
@@ -268,7 +268,7 @@ CORE = {
           "_type": "string",
           # "_do":
           #   - coremapmap CORE/$size,CORE/@core_shape,CORE/@det_map,CORE/$bc_sym
-          "_value": [core_map, "ref:size"],
+          "_value": [core_map, "ref:size:0"],
         }
       ]
     },
@@ -279,7 +279,7 @@ CORE = {
           "_type": "string",
           # "_do":
           #   - coremapmap CORE/$size,CORE/@core_shape,CORE/@crd_map,CORE/$bc_sym
-          "_value": [core_map, "ref:size"],
+          "_value": [core_map, "ref:size:0"],
         }
       ]
     },
@@ -290,7 +290,7 @@ CORE = {
           "_type": "string",
           # "_do":
           #   - coremapmap CORE/$size,CORE/@core_shape,CORE/@crd_bank,CORE/$bc_sym
-          "_value": [core_map, "ref:size"],
+          "_value": [core_map, "ref:size:0"],
         }
       ]
     },

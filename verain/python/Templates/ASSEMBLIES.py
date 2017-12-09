@@ -1,29 +1,22 @@
 from __future__ import absolute_import, division, print_function
 
+import copy
 from Templates.Utils import *
+# base for sections that have axial, rodmap, cells, ...
+from Templates.CellMaps import CellMaps
 
-ASSEMBLY = {
+_assemblyDiff = {
   "_groupName": "ASSEMBLIES",
-  "_pltype": "list",
-  "_sectionParams": ["axial"],
   "_sectionName": "Assembly_%s",
-  "_refParams": ["npin"],
-  "_content": {
-      # "_do":
-      #  - setdb MAIN_DB
-      #  - namesunique %ASSEMBLY/*/$/%axial
-      #  - isinmaps %ASSEMBLY/*/$/%axial,CORE/@assm_map
+  "_order": ["axial", "lattice", "cell"],
+}
 
-      # _tr:
-      #   _name: _loop
-      #   _content: %ASSEMBLY/*/$/%axial
-      # Assembly_(_loop)"": {
-          # "_pltype": "list",
-          # "_do":
-          #  - setdb MAIN_DB
-          #  - setvar _path,%ASSEMBLY/*/$/%axial/$(_loop),apply=>&findfirst
-          #  - getvar _path,apply=>&pathlevel,arg=>3
-          #  - cellsmaps %ASSEMBLY/$(_path)/%rodmap,%ASSEMBLY/$(_path)/%cell,%ASSEMBLY/$(_path)/$npin,%ASSEMBLY/$(_path)/%axial/$(_loop),matsearch=>%ASSEMBLY/$(_path)/%mat/*"":%ASSEMBLY/$(_path)/%fuel/*"":CORE/%mat/*
+ASSEMBLY = copy.deepcopy(CellMaps)
+ASSEMBLY.update(_assemblyDiff)
+
+_assemblyContentDiff = {
+    # lattice handling is identical to rodmap
+    "lattice": ASSEMBLY["_content"]["rodmap"],
     "fuel": {
       "_pltype": "list",
       "_name": "Fuels",
@@ -47,124 +40,6 @@ ASSEMBLY = {
           "_type": "double",
           "_value": [copy_value, 2],
         },
-      ]
-    },
-    "cell": {
-      "_pltype": "list",
-      "_name": "Cells",
-      "_listName": "Cell_%s",
-      "_output": [
-        {
-          "_name": "label",
-          "_pltype": "parameter",
-          "_type": "string",
-          # "_do":
-          #  - value (_lgrid)
-          "_value": [copy_value, 0],
-        },
-        {
-          "_name": "mats",
-          "_pltype": "array",
-          "_type": "string",
-          "_value": [copy_array_after_val, '/'],
-        },
-        {
-          "_name": "radii",
-          "_pltype": "array",
-          "_type": "double",
-          "_value": [copy_array_before_val, '/', slice(1, None)],
-        },
-        {
-          "_name": "num_rings",
-          "_pltype": "parameter",
-          "_type": "int",
-          # "_do":
-          #  - value (_lgrid)
-          "_value": [len_array_after_val, '/'],
-        },
-      ]
-    },
-    "lattice": {
-      "_pltype": "list",
-      "_name": "CellMaps",
-      "_listName": "CellMap_%s",
-      "_output": [
-        {
-          "_name": "label",
-          "_pltype": "parameter",
-          "_type": "string",
-          # "_do":
-          #  - value (_lgrid)
-          "_value": [copy_value, 0],
-        },
-        {
-          "_name": "cell_map",
-          "_pltype": "array",
-          "_type": "string",
-          "_value": [assembly_map, "ref:npin"],
-        },
-      ]
-    },
-    "axial": {
-      "_matchSection": True,
-      "_output": [
-        {
-          "_name": "label",
-          "_pltype": "parameter",
-          "_type": "string",
-          # "_do":
-          #  - value (_loop)
-          "_value": [copy_value, 0],
-        },
-        {
-          "_name": "axial_labels",
-          "_pltype": "array",
-          "_type": "string",
-          # "_do":
-          #  - copyarray %ASSEMBLY/$(_path)/%axial/$(_loop),select=>odd
-          "_value": [copy_array, slice(2, None, 2)],
-        },
-        {
-          "_name": "axial_elevations",
-          "_pltype": "array",
-          "_type": "double",
-          # "_do":
-          #  - copyarray %ASSEMBLY/$(_path)/%axial/$(_loop),select=>even
-          "_value": [copy_array, slice(1, None, 2)],
-        }
-      ]
-    },
-    "Materials": {
-      "_output": [
-        {
-          "_pltype": "list",
-          # "_do":
-          #  - matmap Material_,%ASSEMBLY/$(_path)/%mat/*
-          "_value": copy_value,
-        }
-      ]
-    },
-    "title": {
-      "_output": [
-        {
-          "_pltype": "parameter",
-          "_type": "string",
-          # "_do":
-          #  - copy %ASSEMBLY/$(_path)/$title
-          "_value": copy_value,
-        }
-      ]
-    },
-    "npin": {
-      "_output": [
-        {
-          "_name": "num_pins",
-          "_pltype": "parameter",
-          "_type": "int",
-          # "_do":
-          #  - copy %ASSEMBLY/$(_path)/$npin
-          "_value": copy_value,
-        }
       ]
     },
     "ppitch": {
@@ -384,6 +259,8 @@ ASSEMBLY = {
         }
       ]
     },
-  }
 }
 
+ASSEMBLY["_content"].update(_assemblyContentDiff)
+# now remove the "rodmap" entry that's duplicated as "lattice"
+del ASSEMBLY["_content"]["rodmap"]
