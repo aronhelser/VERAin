@@ -8,7 +8,7 @@ from Templates.CellMaps import CellMaps
 _assemblyDiff = {
   "_groupName": "ASSEMBLIES",
   "_sectionName": "Assembly_%s",
-  "_order": ["axial", "lattice", "cell"],
+  "_order": ["axial", "lattice", "rodmap", "cell", "fuel"],
 }
 
 ASSEMBLY = copy.deepcopy(CellMaps)
@@ -262,5 +262,5 @@ _assemblyContentDiff = {
 }
 
 ASSEMBLY["_content"].update(_assemblyContentDiff)
-# now remove the "rodmap" entry that's duplicated as "lattice"
-del ASSEMBLY["_content"]["rodmap"]
+# Don't remove the "rodmap" entry that's duplicated as "lattice" - p10 uses 'rodmap'
+# del ASSEMBLY["_content"]["rodmap"]

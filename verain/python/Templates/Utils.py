@@ -112,7 +112,8 @@ def len_array_after_val(toks, val, inSlice=slice(0, None)):
   if indices:
     # grab the list after the first val we found.
     outList = outList[indices[0]+1:]
-  return len(outList)
+    return len(outList)
+  return 0
 
 def toCelsius(toks):
   if len(toks) != 2 or not(toks[1] in ["F", "C", "K"]):
@@ -137,12 +138,13 @@ def toKelvin(toks):
 # occupied cells in the core_shape map.
 def core_map(toks, core_size, symmetry="rot"):
   # special case, 42*3, means array of length 42, filled with '3'
-  if (len(toks) == 2 or len(toks) == 3) and type(toks[0]) is int \
+  # explicitly parsed by mapProductDef in parser.
+  if (len(toks) == 3) and type(toks[0]) is int \
     and type(toks[1]) is str \
-    and toks[1][0] == "*":
+    and toks[1] == "*":
     # print("Repeat array", toks[0], toks[1])
     repeat = toks[0]
-    val = toks[1][1:] if len(toks) == 2 else toks[2]
+    val = toks[2]
 
     return copy_array([val] * repeat)
 

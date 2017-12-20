@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 from Templates.Utils import *
+from Templates.Verify import *
 
 CORE = {
   "_pltype": "list",
@@ -40,6 +41,7 @@ CORE = {
       ]
     },
     "rcs_volume": {
+      "_check": [is_double],
       "_output": [
         {
           "_pltype": "parameter",
@@ -98,6 +100,7 @@ CORE = {
       ]
     },
     "apitch": {
+      "_check": [is_double],
       "_output": [
         {
           "_pltype": "parameter",
@@ -506,14 +509,37 @@ CORE = {
         }
       ]
     },
-    "Materials": {
+    "mat": {
+      "_pltype": "list",
+      "_name": "Materials",
+      "_listName": "Material_%s",
       "_output": [
         {
-          "_pltype": "list",
-          # "_do":
-          #   - matmap Material_,CORE/%mat/*
-          "_value": copy_value,
-        }
+          "_name": "key_name",
+          "_pltype": "parameter",
+          "_type": "string",
+          "_value": [copy_value, 0],
+        },
+        {
+          "_name": "density",
+          "_pltype": "parameter",
+          "_type": "double",
+          "_value": [copy_value, 1],
+        },
+        {
+          "_name": "mat_fracs",
+          "_pltype": "array",
+          "_type": "double",
+          "_optional": True,
+          "_value": [copy_array_before_val, '/', slice(3, None, 2)],
+        },
+        {
+          "_name": "mat_names",
+          "_pltype": "array",
+          "_type": "string",
+          "_optional": True,
+          "_value": [copy_array_before_val, '/', slice(2, None, 2)],
+        },
       ]
     },
     "reactor_type": {
