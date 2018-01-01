@@ -278,76 +278,63 @@ MPACT = {
         }
       ]
     },
-    "uniform_crud": {
+    "crud_thickness": {
+      "_inlist": "uniform_crud",
       "_output": [
         {
-          "_pltype": "list",
+          "_pltype": "parameter",
+          "_type": "double",
+          # "_do":
+          #  - copy MPACT/@"uniform_crud":0
           "_value": copy_value,
         }
       ]
     },
-        "crud_thickness": {
-          "_output": [
-            {
-              "_pltype": "parameter",
-              "_type": "double",
-              # "_do":
-              #  - copy MPACT/@"uniform_crud":0
-              "_value": copy_value,
-            }
-          ]
-        },
-        "crud_mass": {
-          "_output": [
-            {
-              "_pltype": "parameter",
-              "_type": "double",
-              # "_do":
-              #  - copy MPACT/@"uniform_crud":1
-              "_value": copy_value,
-            }
-          ]
-        },
-        "boron_mass": {
-          "_output": [
-            {
-              "_pltype": "parameter",
-              "_type": "double",
-              # "_do":
-              #  - copy MPACT/@"uniform_crud":2
-              "_value": copy_value,
-            }
-          ]
-        },
-    "crud_depletion": {
+    "crud_mass": {
+      "_inlist": "uniform_crud",
       "_output": [
         {
-          "_pltype": "list",
+          "_pltype": "parameter",
+          "_type": "double",
+          # "_do":
+          #  - copy MPACT/@"uniform_crud":1
           "_value": copy_value,
         }
       ]
-    },        "flag": {
-          "_output": [
-            {
-              "_pltype": "parameter",
-              "_type": "bool",
-              # "_do":
-              #  - copy MPACT/@"crud_depletion":0
-              "_value": copy_value,
-            }
-          ]
+    },
+    "boron_mass": {
+      "_inlist": "uniform_crud",
+      "_output": [
+        {
+          "_pltype": "parameter",
+          "_type": "double",
+          # "_do":
+          #  - copy MPACT/@"uniform_crud":2
+          "_value": copy_value,
+        }
+      ]
+    },
+    "crud_depletion": {
+      "_inlist": "crud_depletion",
+      "_output": [
+        {
+          "_name": "flag",
+          "_pltype": "parameter",
+          "_type": "bool",
+          # "_do":
+          #  - copy MPACT/@"crud_depletion":0
+          "_value": [copy_value, 0],
         },
-        "crud_depfrac": {
-          "_output": [
-            {
-              "_pltype": "parameter",
-              "_type": "double",
-              # "_do":
-              #  - copy MPACT/@"crud_depletion":1
-              "_value": copy_value,
-            }
-          ]
-        },
+        {
+          "_name": "crud_depfrac",
+          "_pltype": "parameter",
+          "_type": "double",
+          # "_do":
+          #  - copy MPACT/@"crud_depletion":1
+          "_value": [copy_value, 1],
+        }
+      ]
+    },
     "db_entry": {
       "_output": [
         {
@@ -358,80 +345,80 @@ MPACT = {
         }
       ]
     },
-    "quad_set": {
+    "quad_type": {
+      "_inlist": "quad_set",
       "_output": [
         {
-          "_pltype": "list",
+          "_pltype": "parameter",
+          "_type": "string",
+          # "_do":
+          #  - copy MPACT/$quad_type
           "_value": copy_value,
         }
       ]
-    },        "quad_type": {
-          "_output": [
-            {
-              "_pltype": "parameter",
-              "_type": "string",
-              # "_do":
-              #  - copy MPACT/$quad_type
-              "_value": copy_value,
-            }
-          ]
-        },
-        "shield_quad_type": {
-          "_output": [
-            {
-              "_pltype": "parameter",
-              "_type": "string",
-              # "_do":
-              #  - copy MPACT/$shield_quad_type
-              "_value": copy_value,
-            }
-          ]
-        },
-        "polars_octant": {
-          "_output": [
-            {
-              "_pltype": "parameter",
-              "_type": "int",
-              # "_do":
-              #  - copy MPACT/$polars_octant
-              "_value": copy_value,
-            }
-          ]
-        },
-        "azimuthals_octant": {
-          "_output": [
-            {
-              "_pltype": "parameter",
-              "_type": "int",
-              # "_do":
-              #  - copy MPACT/$azimuthals_octant
-              "_value": copy_value,
-            }
-          ]
-        },
-        "shield_azimuthals_octant": {
-          "_output": [
-            {
-              "_pltype": "parameter",
-              "_type": "int",
-              # "_do":
-              #  - copy MPACT/$shield_azimuthals_octant
-              "_value": copy_value,
-            }
-          ]
-        },
-        "shield_polars_octant": {
-          "_output": [
-            {
-              "_pltype": "parameter",
-              "_type": "int",
-              # "_do":
-              #  - copy MPACT/$shield_polars_octant
-              "_value": copy_value,
-            }
-          ]
-        },
+    },
+    "shield_quad_type": {
+      "_inlist": "quad_set",
+      "_output": [
+        {
+          "_pltype": "parameter",
+          "_type": "string",
+          # "_do":
+          #  - copy MPACT/$shield_quad_type
+          "_value": copy_value,
+        }
+      ]
+    },
+    "polars_octant": {
+      "_inlist": "quad_set",
+      "_output": [
+        {
+          "_pltype": "parameter",
+          "_type": "int",
+          # "_do":
+          #  - copy MPACT/$polars_octant
+          "_value": copy_value,
+        }
+      ]
+    },
+    "azimuthals_octant": {
+      "_inlist": "quad_set",
+      "_output": [
+        {
+          "_pltype": "parameter",
+          "_type": "int",
+          # "_do":
+          #  - copy MPACT/$azimuthals_octant
+          "_value": copy_value,
+        }
+      ]
+    },
+    "shield_azimuthals_octant": {
+      "_inlist": "quad_set",
+      "_output": [
+        {
+          "_pltype": "parameter",
+          "_type": "int",
+          # "_do":
+          #  - copy MPACT/$shield_azimuthals_octant
+          "_value": copy_value,
+        }
+      ]
+    },
+    "shield_polars_octant": {
+      "_inlist": "quad_set",
+      "_output": [
+        {
+          "_pltype": "parameter",
+          "_type": "int",
+          # "_do":
+          #  - copy MPACT/$shield_polars_octant
+          "_value": copy_value,
+        }
+      ]
+    },
     "mesh": {
+      "_inlist": "mesh",
       "_pltype": "list",
       "_name": "pinmesh",
       "_listName": "pinmesh_%s",
@@ -459,29 +446,29 @@ MPACT = {
         },
       ]
     },
-        "automesh_bounds_min": {
+        "automesh_bounds": {
+          "_inlist": "mesh",
           "_output": [
             {
+              "_name": "automesh_bounds_min",
               "_pltype": "parameter",
               "_type": "double",
               # "_do":
               #  - copy MPACT/$"automesh_bounds":0
-              "_value": copy_value,
-            }
-          ]
-        },
-        "automesh_bounds_max": {
-          "_output": [
+              "_value": [copy_value, 0],
+            },
             {
+              "_name": "automesh_bounds_max",
               "_pltype": "parameter",
               "_type": "double",
               # "_do":
               #  - copy MPACT/$"automesh_bounds":1
-              "_value": copy_value,
+              "_value": [copy_value, 1],
             }
           ]
         },
         "meshing_method": {
+          "_inlist": "mesh",
           "_output": [
             {
               "_pltype": "parameter",
@@ -493,6 +480,7 @@ MPACT = {
           ]
         },
         "axial_mesh": {
+          "_inlist": "mesh",
           "_output": [
             {
               "_pltype": "array",
@@ -504,6 +492,7 @@ MPACT = {
           ]
         },
         "crud_mesh_thickness": {
+          "_inlist": "mesh",
           "_output": [
             {
               "_pltype": "parameter",
@@ -515,6 +504,7 @@ MPACT = {
           ]
         },
         "crud_mesh_div": {
+          "_inlist": "mesh",
           "_output": [
             {
               "_pltype": "parameter",
@@ -526,6 +516,7 @@ MPACT = {
           ]
         },
         "moderator_mesh_ndiv": {
+          "_inlist": "mesh",
           "_output": [
             {
               "_pltype": "parameter",
@@ -537,6 +528,7 @@ MPACT = {
           ]
         },
         "moderator_mesh_pins": {
+          "_inlist": "mesh",
           "_output": [
             {
               "_pltype": "parameter",
@@ -665,44 +657,40 @@ MPACT = {
             }
           ]
         },
-        "graph": {
-          "_output": [
-            {
-              "_pltype": "list",
-              "_value": copy_value,
-            }
-          ]
-        },
+        # TODO embedded list, inside "parallel_env"
             "decomposition": {
+              "_inlist": "graph",
               "_output": [
                 {
                   "_pltype": "array",
                   "_type": "string",
                   # "_do":
                   #  - copyarray MPACT/@graph_part_method
-                  "_value": copy_value,
+                  "_value": copy_array,
                 }
               ]
             },
             "refinement": {
+              "_inlist": "graph",
               "_output": [
                 {
                   "_pltype": "array",
                   "_type": "string",
                   # "_do":
                   #  - copyarray MPACT/@graph_refn_method
-                  "_value": copy_value,
+                  "_value": copy_array,
                 }
               ]
             },
             "conditions": {
+              "_inlist": "graph",
               "_output": [
                 {
                   "_pltype": "array",
                   "_type": "int",
                   # "_do":
                   #  - copyarray MPACT/@graph_cond
-                  "_value": copy_value,
+                  "_value": copy_array,
                 }
               ]
             },
@@ -715,6 +703,7 @@ MPACT = {
       ]
     },
         "k_tolerance": {
+          "_inlist": "iteration_control",
           "_output": [
             {
               "_pltype": "parameter",
@@ -726,6 +715,7 @@ MPACT = {
           ]
         },
         "flux_tolerance": {
+          "_inlist": "iteration_control",
           "_output": [
             {
               "_pltype": "parameter",
@@ -737,6 +727,7 @@ MPACT = {
           ]
         },
         "num_outers": {
+          "_inlist": "iteration_control",
           "_output": [
             {
               "_pltype": "parameter",
@@ -748,6 +739,7 @@ MPACT = {
           ]
         },
         "num_inners": {
+          "_inlist": "iteration_control",
           "_output": [
             {
               "_pltype": "parameter",
@@ -759,6 +751,7 @@ MPACT = {
           ]
         },
         "up_scatter": {
+          "_inlist": "iteration_control",
           "_output": [
             {
               "_pltype": "parameter",
@@ -770,6 +763,7 @@ MPACT = {
           ]
         },
         "num_extsrc_itrs": {
+          "_inlist": "iteration_control",
           "_output": [
             {
               "_pltype": "parameter",
@@ -781,6 +775,7 @@ MPACT = {
           ]
         },
         "scattering": {
+          "_inlist": "iteration_control",
           "_output": [
             {
               "_pltype": "parameter",
@@ -792,6 +787,7 @@ MPACT = {
           ]
         },
         "trim_Pn_moments": {
+          "_inlist": "iteration_control",
           "_output": [
             {
               "_pltype": "parameter",
@@ -803,6 +799,7 @@ MPACT = {
           ]
         },
         "boundary_update": {
+          "_inlist": "iteration_control",
           "_output": [
             {
               "_pltype": "parameter",
@@ -822,6 +819,7 @@ MPACT = {
       ]
     },
         "dep_filename": {
+          "_inlist": "depletion",
           "_output": [
             {
               "_pltype": "parameter",
@@ -833,6 +831,7 @@ MPACT = {
           ]
         },
         "dep_edit": {
+          "_inlist": "depletion",
           "_output": [
             {
               "_pltype": "parameter",
@@ -844,6 +843,7 @@ MPACT = {
           ]
         },
         "dep_substep": {
+          "_inlist": "depletion",
           "_output": [
             {
               "_pltype": "parameter",
@@ -855,6 +855,7 @@ MPACT = {
           ]
         },
         "dep_kernel": {
+          "_inlist": "depletion",
           "_output": [
             {
               "_pltype": "parameter",
@@ -866,6 +867,7 @@ MPACT = {
           ]
         },
         "depl_time_method": {
+          "_inlist": "depletion",
           "_output": [
             {
               "_pltype": "parameter",
@@ -877,6 +879,7 @@ MPACT = {
           ]
         },
         "include_depl_mats": {
+          "_inlist": "depletion",
           "_output": [
             {
               "_pltype": "array",
@@ -888,6 +891,7 @@ MPACT = {
           ]
         },
         "exclude_depl_mats": {
+          "_inlist": "depletion",
           "_output": [
             {
               "_pltype": "array",
@@ -897,7 +901,8 @@ MPACT = {
               "_value": copy_value,
             }
           ]
-        },    "TH": {
+        },
+    "TH": {
       "_output": [
         {
           "_pltype": "list",
@@ -906,6 +911,7 @@ MPACT = {
       ]
     },
         "coupling_method": {
+          "_inlist": "TH",
           "_output": [
             {
               "_pltype": "parameter",
@@ -917,6 +923,7 @@ MPACT = {
           ]
         },
         "nonlinear_solver": {
+          "_inlist": "TH",
           "_output": [
             {
               "_pltype": "parameter",
@@ -928,6 +935,7 @@ MPACT = {
           ]
         },
         "average_ftemp": {
+          "_inlist": "TH",
           "_output": [
             {
               "_pltype": "parameter",
@@ -939,6 +947,7 @@ MPACT = {
           ]
         },
         "shield_max_outers": {
+          "_inlist": "TH",
           "_output": [
             {
               "_pltype": "parameter",
@@ -950,6 +959,7 @@ MPACT = {
           ]
         },
         "shield_min_dT": {
+          "_inlist": "TH",
           "_output": [
             {
               "_pltype": "parameter",
@@ -961,6 +971,7 @@ MPACT = {
           ]
         },
         "shield_min_drho": {
+          "_inlist": "TH",
           "_output": [
             {
               "_pltype": "parameter",
@@ -972,6 +983,7 @@ MPACT = {
           ]
         },
         "outers_per_TH": {
+          "_inlist": "TH",
           "_output": [
             {
               "_pltype": "parameter",
@@ -982,40 +994,37 @@ MPACT = {
             }
           ]
         },
-        "depthAnderson": {
+        "anderson_options": {
+          "_inlist": "TH",
           "_output": [
             {
+              "_name": "depthAnderson",
               "_pltype": "parameter",
               "_type": "int",
               # "_do":
               #  - copy MPACT/$"anderson_options":0
-              "_value": copy_value,
-            }
-          ]
-        },
-        "mixAnderson": {
-          "_output": [
+              "_value": [copy_value, 0],
+            },
             {
+              "_name": "mixAnderson",
               "_pltype": "parameter",
               "_type": "double",
               # "_do":
               #  - copy MPACT/$"anderson_options":1
-              "_value": copy_value,
-            }
-          ]
-        },
-        "startAnderson": {
-          "_output": [
+              "_value": [copy_value, 1],
+            },
             {
+              "_name": "startAnderson",
               "_pltype": "parameter",
               "_type": "int",
               # "_do":
               #  - copy MPACT/$"anderson_options":2
-              "_value": copy_value,
+              "_value": [copy_value, 2],
             }
           ]
         },
         "ctf_basename": {
+          "_inlist": "TH",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1027,6 +1036,7 @@ MPACT = {
           ]
         },
         "sth_dhfrac": {
+          "_inlist": "TH",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1038,6 +1048,7 @@ MPACT = {
           ]
         },
         "sth_hgap": {
+          "_inlist": "TH",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1049,6 +1060,7 @@ MPACT = {
           ]
         },
         "sth_channeltype": {
+          "_inlist": "TH",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1060,6 +1072,7 @@ MPACT = {
           ]
         },
         "sth_tabletype": {
+          "_inlist": "TH",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1071,6 +1084,7 @@ MPACT = {
           ]
         },
         "sth_avgpin": {
+          "_inlist": "TH",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1082,6 +1096,7 @@ MPACT = {
           ]
         },
         "temptable_shape": {
+          "_inlist": "TH",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1093,6 +1108,7 @@ MPACT = {
           ]
         },
         "temptable_filename": {
+          "_inlist": "TH",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1111,9 +1127,12 @@ MPACT = {
             }
           ]
         },
-            "qprime": {
+        # TODO embedded in "TH"
+            "temptable_qprime": {
+              "_inlist": "temptable",
               "_output": [
                 {
+                  "_name": "qprime",
                   "_pltype": "parameter",
                   "_type": "double",
                   # "_do":
@@ -1122,42 +1141,39 @@ MPACT = {
                 }
               ]
             },
-            "burnup": {
+            "temptable_polynomial": {
+              "_inlist": "temptable",
               "_output": [
                 {
+                  "_name": "burnup",
                   "_pltype": "array",
                   "_type": "double",
                   # "_do":
                   #  - copyarray MPACT/@temptable_polynomial,start=>0,stride=>3
-                  "_value": copy_value,
-                }
-              ]
-            },
-            "a_linear": {
-              "_output": [
+                  "_value": [copy_array, slice(0, None, 3)],
+                },
                 {
+                  "_name": "a_linear",
                   "_pltype": "array",
                   "_type": "double",
                   # "_do":
                   #  - copyarray MPACT/@temptable_polynomial,start=>1,stride=>3
-                  "_value": copy_value,
-                }
-              ]
-            },
-            "b_quadratic": {
-              "_output": [
+                  "_value": [copy_array, slice(1, None, 3)],
+                },
                 {
+                  "_name": "b_quadratic",
                   "_pltype": "array",
                   "_type": "double",
                   # "_do":
                   #  - copyarray MPACT/@temptable_polynomial,start=>2,stride=>3
-                  "_value": copy_value,
+                  "_value": [copy_array, slice(2, None, 3)],
                 }
               ]
             },
-            "boundary": {
+            "temptable_boundary": {
               "_output": [
                 {
+                  "_name": "boundary",
                   "_pltype": "parameter",
                   "_type": "string",
                   # "_do":
@@ -1166,15 +1182,8 @@ MPACT = {
                 }
               ]
             },
-    "cmfd": {
-      "_output": [
-        {
-          "_pltype": "list",
-          "_value": copy_value,
-        }
-      ]
-    },
         "cmfd": {
+          "_inlist": "cmfd",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1186,6 +1195,7 @@ MPACT = {
           ]
         },
         "prolongation": {
+          "_inlist": "cmfd",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1196,9 +1206,11 @@ MPACT = {
             }
           ]
         },
-        "solver": {
+        "cmfd_solver": {
+          "_inlist": "cmfd",
           "_output": [
             {
+              "_name": "solver",
               "_pltype": "parameter",
               "_type": "string",
               # "_do":
@@ -1207,9 +1219,11 @@ MPACT = {
             }
           ]
         },
-        "linear_solver": {
+        "cmfd_linear_solver": {
+          "_inlist": "cmfd",
           "_output": [
             {
+              "_name": "linear_solver",
               "_pltype": "parameter",
               "_type": "string",
               # "_do":
@@ -1219,6 +1233,7 @@ MPACT = {
           ]
         },
         "petsc_linear_solver_method": {
+          "_inlist": "cmfd",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1230,6 +1245,7 @@ MPACT = {
           ]
         },
         "preconditioner": {
+          "_inlist": "cmfd",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1240,9 +1256,11 @@ MPACT = {
             }
           ]
         },
-        "eigen_solver": {
+        "cmfd_eigen_solver": {
+          "_inlist": "cmfd",
           "_output": [
             {
+              "_name": "eigen_solver",
               "_pltype": "parameter",
               "_type": "string",
               # "_do":
@@ -1252,6 +1270,7 @@ MPACT = {
           ]
         },
         "k_shift": {
+          "_inlist": "cmfd",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1263,6 +1282,7 @@ MPACT = {
           ]
         },
         "k_shift_1G": {
+          "_inlist": "cmfd",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1274,6 +1294,7 @@ MPACT = {
           ]
         },
         "cmfd_shift_method": {
+          "_inlist": "cmfd",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1285,6 +1306,7 @@ MPACT = {
           ]
         },
         "cmfd_shift_method_1G": {
+          "_inlist": "cmfd",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1296,6 +1318,7 @@ MPACT = {
           ]
         },
         "cmfd_shift_c0": {
+          "_inlist": "cmfd",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1307,6 +1330,7 @@ MPACT = {
           ]
         },
         "cmfd_relaxation": {
+          "_inlist": "cmfd",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1318,6 +1342,7 @@ MPACT = {
           ]
         },
         "ktol_1G": {
+          "_inlist": "cmfd",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1329,6 +1354,7 @@ MPACT = {
           ]
         },
         "flxtol_1G": {
+          "_inlist": "cmfd",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1340,6 +1366,7 @@ MPACT = {
           ]
         },
         "max_1G_eig_its": {
+          "_inlist": "cmfd",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1350,9 +1377,11 @@ MPACT = {
             }
           ]
         },
-        "num_outers": {
+        "cmfd_num_outers": {
+          "_inlist": "cmfd",
           "_output": [
             {
+              "_name": "num_outers",
               "_pltype": "parameter",
               "_type": "int",
               # "_do":
@@ -1361,9 +1390,11 @@ MPACT = {
             }
           ]
         },
-        "num_inners": {
+        "cmfd_num_inners": {
+          "_inlist": "cmfd",
           "_output": [
             {
+              "_name": "num_inners",
               "_pltype": "parameter",
               "_type": "int",
               # "_do":
@@ -1372,9 +1403,11 @@ MPACT = {
             }
           ]
         },
-        "num_inners_1G": {
+        "cmfd_num_inners_1G": {
+          "_inlist": "cmfd",
           "_output": [
             {
+              "_name": "num_inners_1G",
               "_pltype": "parameter",
               "_type": "int",
               # "_do":
@@ -1383,9 +1416,11 @@ MPACT = {
             }
           ]
         },
-        "up_scatter": {
+        "cmfd_up_scatter": {
+          "_inlist": "cmfd",
           "_output": [
             {
+              "_name": "up_scatter",
               "_pltype": "parameter",
               "_type": "int",
               # "_do":
@@ -1394,9 +1429,11 @@ MPACT = {
             }
           ]
         },
-        "angle_decomp": {
+        "cmfd_angle_decomp": {
+          "_inlist": "cmfd",
           "_output": [
             {
+              "_name": "angle_decomp",
               "_pltype": "parameter",
               "_type": "string",
               # "_do":
@@ -1406,6 +1443,7 @@ MPACT = {
           ]
         },
         "cmfd_ur": {
+          "_inlist": "cmfd",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1417,6 +1455,7 @@ MPACT = {
           ]
         },
         "subplane_target": {
+          "_inlist": "cmfd",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1428,6 +1467,7 @@ MPACT = {
           ]
         },
         "subplane_max": {
+          "_inlist": "cmfd",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1439,6 +1479,7 @@ MPACT = {
           ]
         },
         "num_subplanes": {
+          "_inlist": "cmfd",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1449,58 +1490,56 @@ MPACT = {
             }
           ]
         },
-    "2d1d": {
+    "split_TL": {
+      "_inlist": "2d1d",
       "_output": [
         {
-          "_pltype": "list",
+          "_name": "splitTL",
+          "_pltype": "parameter",
+          "_type": "bool",
+          # "_do":
+          #  - copy MPACT/$split_TL
           "_value": copy_value,
         }
       ]
     },
-        "splitTL": {
-          "_output": [
-            {
-              "_pltype": "parameter",
-              "_type": "bool",
-              # "_do":
-              #  - copy MPACT/$split_TL
-              "_value": copy_value,
-            }
-          ]
-        },
-        "TLtreatment": {
-          "_output": [
-            {
-              "_pltype": "parameter",
-              "_type": "string",
-              # "_do":
-              #  - copy MPACT/$TL_treatment
-              "_value": copy_value,
-            }
-          ]
-        },
-        "nodal_method": {
-          "_output": [
-            {
-              "_pltype": "parameter",
-              "_type": "string",
-              # "_do":
-              #  - copy MPACT/$nodal_method
-              "_value": copy_value,
-            }
-          ]
-        },
-        "under_relax": {
-          "_output": [
-            {
-              "_pltype": "parameter",
-              "_type": "double",
-              # "_do":
-              #  - copy MPACT/$under_relax
-              "_value": copy_value,
-            }
-          ]
-        },
+    "TL_treatment": {
+      "_inlist": "2d1d",
+      "_output": [
+        {
+          "_name": "TLtreatment",
+          "_pltype": "parameter",
+          "_type": "string",
+          # "_do":
+          #  - copy MPACT/$TL_treatment
+          "_value": copy_value,
+        }
+      ]
+    },
+    "nodal_method": {
+      "_inlist": "2d1d",
+      "_output": [
+        {
+          "_pltype": "parameter",
+          "_type": "string",
+          # "_do":
+          #  - copy MPACT/$nodal_method
+          "_value": copy_value,
+        }
+      ]
+    },
+    "under_relax": {
+      "_inlist": "2d1d",
+      "_output": [
+        {
+          "_pltype": "parameter",
+          "_type": "double",
+          # "_do":
+          #  - copy MPACT/$under_relax
+          "_value": copy_value,
+        }
+      ]
+    },
     "xs_library": {
       "_output": [
         {
@@ -1510,6 +1549,7 @@ MPACT = {
       ]
     },
         "xs_type": {
+          "_inlist": "xs_library",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1521,6 +1561,7 @@ MPACT = {
           ]
         },
         "xs_filename": {
+          "_inlist": "xs_library",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1532,6 +1573,7 @@ MPACT = {
           ]
         },
         "ce_filename": {
+          "_inlist": "xs_library",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1543,6 +1585,7 @@ MPACT = {
           ]
         },
         "shield_method": {
+          "_inlist": "xs_library",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1554,6 +1597,7 @@ MPACT = {
           ]
         },
         "shield_nbatch": {
+          "_inlist": "xs_library",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1565,6 +1609,7 @@ MPACT = {
           ]
         },
         "xsshielder": {
+          "_inlist": "xs_library",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1576,6 +1621,7 @@ MPACT = {
           ]
         },
         "quasi_1D": {
+          "_inlist": "xs_library",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1587,6 +1633,7 @@ MPACT = {
           ]
         },
         "res_up_scatter": {
+          "_inlist": "xs_library",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1598,6 +1645,7 @@ MPACT = {
           ]
         },
         "mats_file": {
+          "_inlist": "xs_library",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1609,6 +1657,7 @@ MPACT = {
           ]
         },
         "subgroup_set": {
+          "_inlist": "xs_library",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1620,6 +1669,7 @@ MPACT = {
           ]
         },
         "cat_onegroup": {
+          "_inlist": "xs_library",
           "_output": [
             {
               "_pltype": "array",
@@ -1631,6 +1681,7 @@ MPACT = {
           ]
         },
         "shld_range": {
+          "_inlist": "xs_library",
           "_output": [
             {
               "_pltype": "array",
@@ -1642,6 +1693,7 @@ MPACT = {
           ]
         },
         "mod_mat": {
+          "_inlist": "xs_library",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1661,109 +1713,97 @@ MPACT = {
       ]
     },
         "perturb_time_start": {
+          "_inlist": "transient",
           "_output": [
             {
+              "_name": "perturb_time_start",
               "_pltype": "array",
               "_type": "double",
               # "_do":
               #  - copyarray MPACT/@perturb,start=>0,stride=>7
-              "_value": copy_value,
-            }
-          ]
-        },        "perturb_time_stop": {
-          "_output": [
+              "_value": [copy_array, slice(0, None, 7)],
+            },
             {
+              "_name": "perturb_time_stop",
               "_pltype": "array",
               "_type": "double",
               # "_do":
               #  - copyarray MPACT/@perturb,start=>1,stride=>7
-              "_value": copy_value,
-            }
-          ]
-        },        "perturb_time_step": {
-          "_output": [
+              "_value": [copy_array, slice(1, None, 7)],
+            },
             {
+              "_name": "perturb_time_step",
               "_pltype": "array",
               "_type": "double",
               # "_do":
               #  - copyarray MPACT/@perturb,start=>2,stride=>7
-              "_value": copy_value,
-            }
-          ]
-        },
-        "perturb_type": {
-          "_output": [
+              "_value": [copy_array, slice(2, None, 7)],
+            },
             {
+              "_name": "perturb_type",
               "_pltype": "array",
               "_type": "string",
               # "_do":
               #  - copyarray MPACT/@perturb,start=>3,stride=>7
-              "_value": copy_value,
-            }
-          ]
-        },        "perturb_mat_init": {
-          "_output": [
+              "_value": [copy_array, slice(3, None, 7)],
+            },
             {
+              "_name": "perturb_mat_init",
               "_pltype": "array",
               "_type": "string",
               # "_do":
               #  - copyarray MPACT/@perturb,start=>4,stride=>7
-              "_value": copy_value,
-            }
-          ]
-        },        "perturb_mat_start": {
-          "_output": [
+              "_value": [copy_array, slice(4, None, 7)],
+            },
             {
+              "_name": "perturb_mat_start",
               "_pltype": "array",
               "_type": "string",
               # "_do":
               #  - copyarray MPACT/@perturb,start=>5,stride=>7
-              "_value": copy_value,
-            }
-          ]
-        },        "perturb_mat_stop": {
-          "_output": [
+              "_value": [copy_array, slice(5, None, 7)],
+            },
             {
+              "_name": "perturb_mat_stop",
               "_pltype": "array",
               "_type": "string",
               # "_do":
               #  - copyarray MPACT/@perturb,start=>6,stride=>7
-              "_value": copy_value,
+              "_value": [copy_array, slice(6, None, 7)],
             }
           ]
         },
-        "timestep_dt": {
+        "timestep": {
+          "_inlist": "transient",
           "_output": [
             {
+              "_name": "timestep_dt",
               "_pltype": "parameter",
               "_type": "double",
               # "_do":
               #  - copy MPACT/$"timestep":0
-              "_value": copy_value,
-            }
-          ]
-        },        "timestep_dt_min": {
-          "_output": [
+              "_value": [copy_value, 0],
+            },
             {
+              "_name": "timestep_dt_min",
               "_pltype": "parameter",
               "_type": "double",
               # "_do":
               #  - copy MPACT/$"timestep":1
-              "_value": copy_value,
-            }
-          ]
-        },        "timestep_dt_max": {
-          "_output": [
+              "_value": [copy_value, 1],
+            },
             {
+              "_name": "timestep_dt_max",
               "_pltype": "parameter",
               "_type": "double",
               # "_do":
               #  - copy MPACT/$"timestep":2
-              "_value": copy_value,
+              "_value": [copy_value, 2],
             }
           ]
         },
         "tml": {
+          "_inlist": "transient",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1775,6 +1815,7 @@ MPACT = {
           ]
         },
         "prompt": {
+          "_inlist": "transient",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1786,6 +1827,7 @@ MPACT = {
           ]
         },
         "accel": {
+          "_inlist": "transient",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1797,6 +1839,7 @@ MPACT = {
           ]
         },
         "delayenergy": {
+          "_inlist": "transient",
           "_output": [
             {
               "_pltype": "parameter",
@@ -1808,19 +1851,18 @@ MPACT = {
           ]
         },
         "transmethod": {
+          "_inlist": "transient",
           "_output": [
             {
+              "_name": "transmethod",
               "_pltype": "parameter",
               "_type": "string",
               # "_do":
               #  - copy MPACT/$"transmethod":0
-              "_value": copy_value,
-            }
-          ]
-        },
-        "theta_order": {
-          "_output": [
+              "_value": [copy_value, 0],
+            },
             {
+              "_name": "theta_order",
               "_pltype": "parameter",
               "_type": "double",
               # "_do":

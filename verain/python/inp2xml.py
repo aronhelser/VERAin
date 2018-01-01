@@ -95,6 +95,7 @@ class VeraInConverter(object):
     def replaceWithFile(self, toks):
         # given a filename, replace with its contents
         filename = toks[1]
+        incData = ""
         try:
             incFile = open(os.path.join(scriptDir, "../scripts/Init", filename), "r")
             incData = "  " + "  ".join( incFile.readlines() )
@@ -102,6 +103,22 @@ class VeraInConverter(object):
             raise ValueError("Unable to open included file, '%s'" % filename)
 
         return incData
+
+    def addDefaults(self, toks):
+        # print("Got section:", toks[0], toks[1])
+        sectionLine = "[%s] %s" % (toks[0], toks[1])
+
+        filename = "%s.ini" % toks[0]
+        incData = ""
+        try:
+            incFile = open(os.path.join(scriptDir, "../scripts/Init", filename), "r")
+            incData = "  " + "  ".join( incFile.readlines() )
+            # print("Added defaults, section:", toks[0])
+        except:
+            pass
+        if incData:
+            return sectionLine + incData
+        return sectionLine
 
     def inpfile_BNF(self):
         if not VeraInConverter.inpbnf:
@@ -157,7 +174,8 @@ class VeraInConverter(object):
             inlineCardDefEOL = pp.Group( self.keyWordDef + pp.Group(valueDefEOL) )
 
             # section header complicated by possible inline cards on the same line.
-            sectionNameDef = pp.oneOf( VeraInConverter.sectionNames.keys() ).setParseAction(self.handleSectionName)
+            sectionNamePlain = pp.oneOf( VeraInConverter.sectionNames.keys() )
+            sectionNameDef = sectionNamePlain.setParseAction(self.handleSectionName)
             sectionHeader = lbrack + sectionNameDef + rbrack + \
                 ( (pp.ZeroOrMore(inlineCardDefSemi | semi) + inlineCardDefEOL) | pp.ZeroOrMore(EOL) )
 
@@ -176,7 +194,8 @@ class VeraInConverter(object):
             #
             # additional parser to include files in this file, using some of our rules
             VeraInConverter.includebnf = (keyWordWhite + "include" + \
-             (quoteStr | pp.Word(nonsemi))).setParseAction(self.replaceWithFile)
+              (quoteStr | pp.Word(nonsemi))).setParseAction(self.replaceWithFile) | \
+              (lbrack + sectionNamePlain + rbrack + (pp.lineEnd | pp.Combine(pp.restOfLine + pp.lineEnd))).setParseAction(self.addDefaults)
             VeraInConverter.includebnf.ignore( comment )
 
         return VeraInConverter.inpbnf
@@ -245,7 +264,8 @@ class VeraInConverter(object):
                     raise ValueError("Replacement arg '%s' not available" % key)
 
     def outputParam(self, name, ptype, value, optional=False):
-        if optional and not value:
+        # TODO this works for empty strings and integers > 0, but what about 0?
+        if optional and value == None:
             return
         elif type(value) == str and value == "":
             raise ValueError("Non-optional parameter '%s' with empty value" % name)
@@ -272,12 +292,12 @@ class VeraInConverter(object):
         for outSpec in spec["_output"]:
             # "_name" is an override for the input paramName
             outName = outSpec["_name"] if "_name" in outSpec else paramName
-            # type is modified for arrays
+            # output type is modified for arrays
             if "_type" in outSpec:
                 outType = outSpec["_type"] if outSpec["_pltype"] != "array" else "Array(%s)" % outSpec["_type"]
             else:
                 outType = "none"
-            # allow optional output, if array is can have values tacked on the end.
+            # allow optional output, if array can have values tacked on the end.
             optionalFlag = "_optional" in outSpec and outSpec["_optional"]
             if outSpec["_pltype"] == "parameter" or outSpec["_pltype"] == "array":
                 if type(outSpec["_value"]) == list:
@@ -295,8 +315,8 @@ class VeraInConverter(object):
                 # add refs
                 self.addOuputRef(card, outSpec, outName, refs)
             else:
-                # this shouldn't get hit, beause we've already handled lists
-                raise ValueError("Unexpected parameter type, %s, for %s" % (outSpec["_pltype"], outName))
+                # this shouldn't get hit, because we've already handled lists
+                raise ValueError("Unexpected parameter type, '%s', for '%s'" % (outSpec["_pltype"], outName))
 
     # Should we output this card? Does it have a "_condition" that needs to be true?
     def shouldOutputCard(self, card, spec, paramDict, refs):
@@ -335,10 +355,19 @@ class VeraInConverter(object):
 
             self.outputListEnd(spec["_name"])
 
+    # output a list of cards.
+    # Cards whose type is "parameter" or "array" are unique
+    # Earlier values are replaced by later values - allows for inclusion of defaults
+    # Lists are collected together, and output together
+    # a section card (like 'axial') causes other section cards to be ignored.
     def outputCards(self, cards, paramDict, useDict=True):
-        listCards = []
-        dictCards = {}
-        listParamName = ""
+        # Collect cards that appear more than once, to be output together
+        listCards = {}
+        # collect cards that are unique, but should be output inside a list
+        groupedCards = {}
+        # all other unique cards, custom values over-write defaults
+        cardDict = {}
+        # listParamName = ""
         sectionName = ""
         refs = paramDict["_refs"] if "_refs" in paramDict else None
         # if there is a section card avail, make sure other section cards aren't output.
@@ -353,37 +382,47 @@ class VeraInConverter(object):
                 if "_check" in spec:
                     self.verifyCard(card, spec)
                 # lists - see if any existing cardlist has terminated and needs to be output.
-                if listCards and (not ("_pltype" in spec and spec["_pltype"] == "list") or listParamName != paramName):
-                    # handle the saved list of cards as a list.
-                    self.outputCardListOfLists(listCards, paramDict, refs)
-                    # reset the cardList
-                    listCards = []
-                    listParamName = ""
+                # if listCards and (not ("_pltype" in spec and spec["_pltype"] == "list") or listParamName != paramName):
+                #     # handle the saved list of cards as a list.
+                #     self.outputCardListOfLists(listCards, paramDict, refs)
+                #     # reset the cardList
+                #     listCards = []
+                #     listParamName = ""
 
                 # lists - gather cards first.
+                # TODO embedded list, "graph" in "parallel_env"
                 if useDict and "_inlist" in spec:
                     # gather separate cards into a list
                     dictKey = spec["_inlist"]
-                    if not dictKey in dictCards:
-                        dictCards[dictKey] = []
-                    dictCards[dictKey].append(card)
+                    if not dictKey in groupedCards:
+                        groupedCards[dictKey] = []
+                    groupedCards[dictKey].append(card)
+                    # once case ("Np") needs to duplicate output, not in list, too.
+                    if "_notInList" in spec["_output"][0] and spec["_output"][0]["_notInList"]:
+                        cardDict[paramName] = (card, spec, paramName)
                 # single card type gathered, outputing list-of-list
                 elif "_pltype" in spec and spec["_pltype"] == "list":
-                    listParamName = paramName
-                    listCards.append(card)
+                    if not paramName in listCards:
+                        listCards[paramName] = []
+                    listCards[paramName].append(card)
+                # keep if it's not a section card, or if it is a section card, and the key matches.
                 elif paramName != sectionName or card[1][0] == sectionKey:
-                    # output if it's not a section card, or if it is a section card, and the key matches.
-                    self.outputSingleCard(card, spec, paramName, refs)
+                    # over-write earlier entries with later entries
+                    cardDict[paramName] = (card, spec, paramName)
             else:
                 # this shouldn't get hit, because of keyword lists for sections.
-                print("XXX TODO", paramName, card[1][0] )
+                raise ValueError("Unexpected card name, '%s', with tag '%s'" % (paramName, card[1][0]))
 
-        # if we're done and we still have a card list, output it.
-        if listCards:
-            self.outputCardListOfLists(listCards, paramDict, refs)
+        # output single cards, sorting is futile, since this isn't the output name.
+        for dictKey in sorted(cardDict.keys()):
+            card, spec, paramName = cardDict[dictKey]
+            self.outputSingleCard(card, spec, paramName, refs)
+        # output any list-of-lists.
+        for dictKey in listCards:
+            self.outputCardListOfLists(listCards[dictKey], paramDict, refs)
         # output any cards grouped into lists
-        for dictKey in dictCards:
-            self.outputCardList(dictCards[dictKey], dictKey, paramDict, refs)
+        for dictKey in groupedCards:
+            self.outputCardList(groupedCards[dictKey], dictKey, paramDict, refs)
 
 
     # Start and end a list, sets indent for contents.

@@ -8,6 +8,7 @@ CORE = {
   # "_do":
   #   - setdb MAIN_DB
   "_refParams": ["size"],
+  "_order": ["mat", "core_shape"],
   "_content": {
     "op_date": {
       "_output": [
@@ -238,7 +239,7 @@ CORE = {
           "_type": "string",
           # "_do":
           #   - coremapmap CORE/$size,CORE/@core_shape,CORE/@assm_map,CORE/$bc_sym
-          "_value": [core_map, "ref:size:0"],
+          "_value": [core_map, "ref:size:0", "ref:shape"],
         }
       ]
     },
@@ -249,7 +250,7 @@ CORE = {
           "_type": "int",
           # "_do":
           #   - coremapmap CORE/$size,CORE/@core_shape,CORE/@rotate_map,CORE/$bc_sym,expand=>0,ignore=>0
-          "_value": [core_map, "ref:size:0"],
+          "_value": [core_map, "ref:size:0", "ref:shape"],
         }
       ]
     },
@@ -260,7 +261,7 @@ CORE = {
           "_type": "string",
           # "_do":
           #   - coremapmap CORE/$size,CORE/@core_shape,CORE/@insert_map,CORE/$bc_sym
-          "_value": [core_map, "ref:size:0"],
+          "_value": [core_map, "ref:size:0", "ref:shape"],
         }
       ]
     },
@@ -271,7 +272,7 @@ CORE = {
           "_type": "string",
           # "_do":
           #   - coremapmap CORE/$size,CORE/@core_shape,CORE/@det_map,CORE/$bc_sym
-          "_value": [core_map, "ref:size:0"],
+          "_value": [core_map, "ref:size:0", "ref:shape"],
         }
       ]
     },
@@ -282,7 +283,7 @@ CORE = {
           "_type": "string",
           # "_do":
           #   - coremapmap CORE/$size,CORE/@core_shape,CORE/@crd_map,CORE/$bc_sym
-          "_value": [core_map, "ref:size:0"],
+          "_value": [core_map, "ref:size:0", "ref:shape"],
         }
       ]
     },
@@ -293,7 +294,7 @@ CORE = {
           "_type": "string",
           # "_do":
           #   - coremapmap CORE/$size,CORE/@core_shape,CORE/@crd_bank,CORE/$bc_sym
-          "_value": [core_map, "ref:size:0"],
+          "_value": [core_map, "ref:size:0", "ref:shape"],
         }
       ]
     },
@@ -305,6 +306,7 @@ CORE = {
           "_type": "int",
           # "_do":
           #   - copy CORE/@core_shape
+          "_refParam": [extract_core_shape],
           "_value": copy_array,
         }
       ]
@@ -515,16 +517,16 @@ CORE = {
       "_listName": "Material_%s",
       "_output": [
         {
-          "_name": "key_name",
-          "_pltype": "parameter",
-          "_type": "string",
-          "_value": [copy_value, 0],
-        },
-        {
           "_name": "density",
           "_pltype": "parameter",
           "_type": "double",
           "_value": [copy_value, 1],
+        },
+        {
+          "_name": "key_name",
+          "_pltype": "parameter",
+          "_type": "string",
+          "_value": [copy_value, 0],
         },
         {
           "_name": "mat_fracs",
@@ -539,6 +541,13 @@ CORE = {
           "_type": "string",
           "_optional": True,
           "_value": [copy_array_before_val, '/', slice(2, None, 2)],
+        },
+        {
+          "_name": "thexp",
+          "_pltype": "parameter",
+          "_type": "double",
+          "_optional": True,
+          "_value": [extract_param, "thexp"],
         },
       ]
     },

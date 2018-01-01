@@ -180,17 +180,6 @@ SHIFT = {
         }
       ]
     },
-    "Np": {
-      "_output": [
-        {
-          "_pltype": "parameter",
-          "_type": "double",
-          # "_do":
-          #  - copy SHIFT/$Np
-          "_value": copy_value,
-        }
-      ]
-    },
     "excore_filename": {
       "_output": [
         {
@@ -235,20 +224,14 @@ SHIFT = {
         }
       ]
     },
-    "kcode_db": {
-      "_output": [
-        {
-          "_pltype": "list",
-          "_value": copy_value,
-        }
-      ]
-    },
         "Np": {
           "_inlist": "kcode_db",
           "_output": [
             {
               "_pltype": "parameter",
               "_type": "double",
+              # Special Case: duplicate this parameter outside the list, too.
+              "_notInList": True,
               # "_do":
               #  - copy SHIFT/$Np
               "_value": copy_value,
