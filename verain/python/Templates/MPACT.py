@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 from Templates.Utils import *
+from Templates.Verify import *
 
 MPACT = {
   "_content": {
@@ -336,13 +337,36 @@ MPACT = {
       ]
     },
     "db_entry": {
+      "_pltype": "list",
+      "_name": "db_entry",
+      "_listName": "db_entry_%s",
+      "_check": [
+        [is_literal, '/', 1],
+        [is_literal, '/', 3],
+      ],
+      # "_do":
+      #  - mpact_db db_entry_,MPACT/%db_entry/*
       "_output": [
         {
-          "_pltype": "list",
-          # "_do":
-          #  - mpact_db db_entry_,MPACT/%db_entry/*
-          "_value": copy_value,
-        }
+          "_name": "path",
+          "_pltype": "parameter",
+          "_type": "string",
+          "_value": [copy_value, 0],
+        },
+        # skip a '/'
+        {
+          "_name": "type",
+          "_pltype": "parameter",
+          "_type": "string",
+          "_value": [copy_value, 2],
+        },
+        # skip a '/'
+        {
+          "_name": "value",
+          "_pltype": "parameter",
+          "_type": "string",
+          "_value": [copy_value, 4],
+        },
       ]
     },
     "quad_type": {
@@ -539,14 +563,7 @@ MPACT = {
             }
           ]
         },
-    "parallel_env": {
-      "_output": [
-        {
-          "_pltype": "list",
-          "_value": copy_value,
-        }
-      ]
-    },
+
         "num_space": {
           "_inlist": "parallel_env",
           "_output": [
@@ -657,11 +674,12 @@ MPACT = {
             }
           ]
         },
-        # TODO embedded list, inside "parallel_env"
-            "decomposition": {
-              "_inlist": "graph",
+        # embedded list, inside "parallel_env"
+            "graph_part_method": {
+              "_inlist": "parallel_env,graph",
               "_output": [
                 {
+                  "_name": "decomposition",
                   "_pltype": "array",
                   "_type": "string",
                   # "_do":
@@ -670,10 +688,11 @@ MPACT = {
                 }
               ]
             },
-            "refinement": {
-              "_inlist": "graph",
+            "graph_refn_method": {
+              "_inlist": "parallel_env,graph",
               "_output": [
                 {
+                  "_name": "refinement",
                   "_pltype": "array",
                   "_type": "string",
                   # "_do":
@@ -682,10 +701,11 @@ MPACT = {
                 }
               ]
             },
-            "conditions": {
-              "_inlist": "graph",
+            "graph_cond": {
+              "_inlist": "parallel_env,graph",
               "_output": [
                 {
+                  "_name": "conditions",
                   "_pltype": "array",
                   "_type": "int",
                   # "_do":
@@ -694,14 +714,7 @@ MPACT = {
                 }
               ]
             },
-    "iteration_control": {
-      "_output": [
-        {
-          "_pltype": "list",
-          "_value": copy_value,
-        }
-      ]
-    },
+
         "k_tolerance": {
           "_inlist": "iteration_control",
           "_output": [
@@ -810,14 +823,7 @@ MPACT = {
             }
           ]
         },
-    "depletion": {
-      "_output": [
-        {
-          "_pltype": "list",
-          "_value": copy_value,
-        }
-      ]
-    },
+
         "dep_filename": {
           "_inlist": "depletion",
           "_output": [
@@ -902,14 +908,7 @@ MPACT = {
             }
           ]
         },
-    "TH": {
-      "_output": [
-        {
-          "_pltype": "list",
-          "_value": copy_value,
-        }
-      ]
-    },
+
         "coupling_method": {
           "_inlist": "TH",
           "_output": [
@@ -1119,17 +1118,10 @@ MPACT = {
             }
           ]
         },
-        "temptable": {
-          "_output": [
-            {
-              "_pltype": "list",
-              "_value": copy_value,
-            }
-          ]
-        },
-        # TODO embedded in "TH"
+
+        # embedded in "TH"
             "temptable_qprime": {
-              "_inlist": "temptable",
+              "_inlist": "TH,temptable",
               "_output": [
                 {
                   "_name": "qprime",
@@ -1142,7 +1134,7 @@ MPACT = {
               ]
             },
             "temptable_polynomial": {
-              "_inlist": "temptable",
+              "_inlist": "TH,temptable",
               "_output": [
                 {
                   "_name": "burnup",
@@ -1171,6 +1163,7 @@ MPACT = {
               ]
             },
             "temptable_boundary": {
+              "_inlist": "TH,temptable",
               "_output": [
                 {
                   "_name": "boundary",
@@ -1540,14 +1533,7 @@ MPACT = {
         }
       ]
     },
-    "xs_library": {
-      "_output": [
-        {
-          "_pltype": "list",
-          "_value": copy_value,
-        }
-      ]
-    },
+
         "xs_type": {
           "_inlist": "xs_library",
           "_output": [
@@ -1704,14 +1690,7 @@ MPACT = {
             }
           ]
         },
-    "transient": {
-      "_output": [
-        {
-          "_pltype": "list",
-          "_value": copy_value,
-        }
-      ]
-    },
+
         "perturb_time_start": {
           "_inlist": "transient",
           "_output": [
@@ -1867,7 +1846,7 @@ MPACT = {
               "_type": "double",
               # "_do":
               #  - copy MPACT/$"transmethod":1
-              "_value": copy_value,
+              "_value": [copy_value, 1],
             }
           ]
         },

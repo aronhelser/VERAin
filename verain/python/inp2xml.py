@@ -331,11 +331,12 @@ class VeraInConverter(object):
         return True
 
     # Output a list, with the inner params from one or more cards, extracted and grouped.
-    def outputCardList(self, listCards, listName, paramDict, refs):
+    def outputCardList(self, listCards, listName, paramDict, refs, useDict):
         # outer list, examples in MPACT or SHIFT
         self.outputListStart(listName)
-        # these cards were extracted into a dict, so we don't want to extract again, this time we output normally.
-        self.outputCards(listCards, paramDict, useDict=False)
+        # these cards were extracted into a dict, so we don't want to extract this level again,
+        # this time we output this level normally.
+        self.outputCards(listCards, paramDict, useDict+1)
         self.outputListEnd(listName)
 
     # Output a list of lists, with the inner lists derived from a single input card.
@@ -360,16 +361,17 @@ class VeraInConverter(object):
     # Earlier values are replaced by later values - allows for inclusion of defaults
     # Lists are collected together, and output together
     # a section card (like 'axial') causes other section cards to be ignored.
-    def outputCards(self, cards, paramDict, useDict=True):
+    def outputCards(self, cards, paramDict, useDict=0):
         # Collect cards that appear more than once, to be output together
         listCards = {}
         # collect cards that are unique, but should be output inside a list
         groupedCards = {}
         # all other unique cards, custom values over-write defaults
         cardDict = {}
-        # listParamName = ""
+
         sectionName = ""
         refs = paramDict["_refs"] if "_refs" in paramDict else None
+
         # if there is a section card avail, make sure other section cards aren't output.
         if "_section" in paramDict:
             sectionKey = paramDict["_section"][1][0]
@@ -381,26 +383,24 @@ class VeraInConverter(object):
                 # verify the conents of the card, first
                 if "_check" in spec:
                     self.verifyCard(card, spec)
-                # lists - see if any existing cardlist has terminated and needs to be output.
-                # if listCards and (not ("_pltype" in spec and spec["_pltype"] == "list") or listParamName != paramName):
-                #     # handle the saved list of cards as a list.
-                #     self.outputCardListOfLists(listCards, paramDict, refs)
-                #     # reset the cardList
-                #     listCards = []
-                #     listParamName = ""
 
                 # lists - gather cards first.
-                # TODO embedded list, "graph" in "parallel_env"
-                if useDict and "_inlist" in spec:
-                    # gather separate cards into a list
-                    dictKey = spec["_inlist"]
+                # for embedded list, e.g. "graph" in "parallel_env",
+                #   get the list names first.
+                dictKeys = None
+                if "_inlist" in spec:
+                    dictKeys = spec["_inlist"].split(",")
+                # gather separate cards into a list. Pick out list key for this level.
+                if dictKeys and len(dictKeys) > useDict:
+                    dictKey = dictKeys[useDict]
                     if not dictKey in groupedCards:
                         groupedCards[dictKey] = []
                     groupedCards[dictKey].append(card)
-                    # once case ("Np") needs to duplicate output, not in list, too.
+                    # one case (e.g. "Np") needs to duplicate output, not in list, too.
                     if "_notInList" in spec["_output"][0] and spec["_output"][0]["_notInList"]:
                         cardDict[paramName] = (card, spec, paramName)
                 # single card type gathered, outputing list-of-list
+                # (careful, might be inside a grouping list, like "pinmesh" in "mesh")
                 elif "_pltype" in spec and spec["_pltype"] == "list":
                     if not paramName in listCards:
                         listCards[paramName] = []
@@ -422,7 +422,7 @@ class VeraInConverter(object):
             self.outputCardListOfLists(listCards[dictKey], paramDict, refs)
         # output any cards grouped into lists
         for dictKey in groupedCards:
-            self.outputCardList(groupedCards[dictKey], dictKey, paramDict, refs)
+            self.outputCardList(groupedCards[dictKey], dictKey, paramDict, refs, useDict)
 
 
     # Start and end a list, sets indent for contents.

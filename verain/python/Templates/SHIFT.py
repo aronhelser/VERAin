@@ -92,17 +92,6 @@ SHIFT = {
         }
       ]
     },
-    "mesh": {
-      "_output": [
-        {
-          "_pltype": "parameter",
-          "_type": "int",
-          # "_do":
-          #  - copy SHIFT/$mesh
-          "_value": copy_value,
-        }
-      ]
-    },
     "do_micro_tally": {
       "_output": [
         {
@@ -110,28 +99,6 @@ SHIFT = {
           "_type": "bool",
           # "_do":
           #  - copy SHIFT/$do_micro_tally
-          "_value": copy_value,
-        }
-      ]
-    },
-    "do_transport": {
-      "_output": [
-        {
-          "_pltype": "parameter",
-          "_type": "bool",
-          # "_do":
-          #  - copy SHIFT/$do_transport
-          "_value": copy_value,
-        }
-      ]
-    },
-    "do_output": {
-      "_output": [
-        {
-          "_pltype": "parameter",
-          "_type": "bool",
-          # "_do":
-          #  - copy SHIFT/$do_output
           "_value": copy_value,
         }
       ]
@@ -284,15 +251,9 @@ SHIFT = {
         }
       ]
     },
-    "broaden_db": {
-      "_output": [
-        {
-          "_pltype": "list",
-          "_value": copy_value,
-        }
-      ]
-    },
+
         "temperature_tol": {
+          "_inlist": "broaden_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -304,6 +265,7 @@ SHIFT = {
           ]
         },
         "union_energy": {
+          "_inlist": "broaden_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -315,6 +277,7 @@ SHIFT = {
           ]
         },
         "delta_t": {
+          "_inlist": "broaden_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -326,6 +289,7 @@ SHIFT = {
           ]
         },
         "energy_tol": {
+          "_inlist": "broaden_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -336,15 +300,9 @@ SHIFT = {
             }
           ]
         },
-    "tally_db": {
-      "_output": [
-        {
-          "_pltype": "list",
-          "_value": copy_value,
-        }
-      ]
-    },
+
         "radial_mesh": {
+          "_inlist": "tally_db",
           "_output": [
             {
               "_pltype": "array",
@@ -356,6 +314,7 @@ SHIFT = {
           ]
         },
         "num_theta": {
+          "_inlist": "tally_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -367,6 +326,7 @@ SHIFT = {
           ]
         },
         "num_axial": {
+          "_inlist": "tally_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -378,6 +338,7 @@ SHIFT = {
           ]
         },
         "n_bounds": {
+          "_inlist": "tally_db",
           "_output": [
             {
               "_pltype": "array",
@@ -389,6 +350,7 @@ SHIFT = {
           ]
         },
         "p_bounds": {
+          "_inlist": "tally_db",
           "_output": [
             {
               "_pltype": "array",
@@ -400,6 +362,7 @@ SHIFT = {
           ]
         },
         "micro_zaids": {
+          "_inlist": "tally_db",
           "_output": [
             {
               "_pltype": "array",
@@ -411,6 +374,7 @@ SHIFT = {
           ]
         },
         "micro_rxns": {
+          "_inlist": "tally_db",
           "_output": [
             {
               "_pltype": "array",
@@ -422,6 +386,7 @@ SHIFT = {
           ]
         },
         "gamma_flux": {
+          "_inlist": "tally_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -432,15 +397,9 @@ SHIFT = {
             }
           ]
         },
-    "boundary_mesh_db": {
-      "_output": [
-        {
-          "_pltype": "list",
-          "_value": copy_value,
-        }
-      ]
-    },
+
         "bc_bnd_mesh": {
+          "_inlist": "boundary_mesh_db",
           "_output": [
             {
               "_pltype": "array",
@@ -452,6 +411,7 @@ SHIFT = {
           ]
         },
         "x_bnd_mesh": {
+          "_inlist": "boundary_mesh_db",
           "_output": [
             {
               "_pltype": "array",
@@ -463,6 +423,7 @@ SHIFT = {
           ]
         },
         "y_bnd_mesh": {
+          "_inlist": "boundary_mesh_db",
           "_output": [
             {
               "_pltype": "array",
@@ -474,6 +435,7 @@ SHIFT = {
           ]
         },
         "z_bnd_mesh": {
+          "_inlist": "boundary_mesh_db",
           "_output": [
             {
               "_pltype": "array",
@@ -484,15 +446,9 @@ SHIFT = {
             }
           ]
         },
-    "hybrid_db": {
-      "_output": [
-        {
-          "_pltype": "list",
-          "_value": copy_value,
-        }
-      ]
-    },
+
         "problem_name": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -504,6 +460,7 @@ SHIFT = {
           ]
         },
         "xs_library": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -515,10 +472,13 @@ SHIFT = {
           ]
         },
         "mesh": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "parameter",
               "_type": "int",
+              # Special Case: duplicate this parameter outside the list, too.
+              "_notInList": True,
               # "_do":
               #  - copy SHIFT/$mesh
               "_value": copy_value,
@@ -526,6 +486,7 @@ SHIFT = {
           ]
         },
         "dimension": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -537,10 +498,13 @@ SHIFT = {
           ]
         },
         "do_transport": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "parameter",
               "_type": "bool",
+              # Special Case: duplicate this parameter outside the list, too.
+              "_notInList": True,
               # "_do":
               #  - copy SHIFT/$do_transport
               "_value": copy_value,
@@ -548,10 +512,13 @@ SHIFT = {
           ]
         },
         "do_output": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "parameter",
               "_type": "bool",
+              # Special Case: duplicate this parameter outside the list, too.
+              "_notInList": True,
               # "_do":
               #  - copy SHIFT/$do_output
               "_value": copy_value,
@@ -559,6 +526,7 @@ SHIFT = {
           ]
         },
         "output_adjoint": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -570,6 +538,7 @@ SHIFT = {
           ]
         },
         "adjoint": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -581,6 +550,7 @@ SHIFT = {
           ]
         },
         "num_blocks_i": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -592,6 +562,7 @@ SHIFT = {
           ]
         },
         "num_blocks_j": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -603,6 +574,7 @@ SHIFT = {
           ]
         },
         "num_z_blocks": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -614,6 +586,7 @@ SHIFT = {
           ]
         },
         "num_sets": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -625,6 +598,7 @@ SHIFT = {
           ]
         },
         "num_groups": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -636,6 +610,7 @@ SHIFT = {
           ]
         },
         "max_delta_z": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -647,6 +622,7 @@ SHIFT = {
           ]
         },
         "store_fulcrum_string": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -658,6 +634,7 @@ SHIFT = {
           ]
         },
         "downscatter": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -669,6 +646,7 @@ SHIFT = {
           ]
         },
         "Pn_order": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -680,6 +658,7 @@ SHIFT = {
           ]
         },
         "eq_set": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -691,6 +670,7 @@ SHIFT = {
           ]
         },
         "new_grp_bounds": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "array",
@@ -702,6 +682,7 @@ SHIFT = {
           ]
         },
         "grp_collapse_src": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "array",
@@ -713,6 +694,7 @@ SHIFT = {
           ]
         },
         "cell_homogenize": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -723,9 +705,11 @@ SHIFT = {
             }
           ]
         },
-        "spn_matrix_type": {
+        "SPN_matrix_type": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
+              "_name": "spn_matrix_type",
               "_pltype": "parameter",
               "_type": "string",
               # "_do":
@@ -735,6 +719,7 @@ SHIFT = {
           ]
         },
         "SPN_order": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -745,15 +730,9 @@ SHIFT = {
             }
           ]
         },
-        "quadrature_db": {
-          "_output": [
-            {
-              "_pltype": "list",
-              "_value": copy_value,
-            }
-          ]
-        },
+
             "quad_type": {
+              "_inlist": "hybrid_db,quadrature_db",
               "_output": [
                 {
                   "_pltype": "parameter",
@@ -765,6 +744,7 @@ SHIFT = {
               ]
             },
             "polars_octant": {
+              "_inlist": "hybrid_db,quadrature_db",
               "_output": [
                 {
                   "_pltype": "parameter",
@@ -776,6 +756,7 @@ SHIFT = {
               ]
             },
             "azimuthals_octant": {
+              "_inlist": "hybrid_db,quadrature_db",
               "_output": [
                 {
                   "_pltype": "parameter",
@@ -787,6 +768,7 @@ SHIFT = {
               ]
             },
             "Sn_order": {
+              "_inlist": "hybrid_db,quadrature_db",
               "_output": [
                 {
                   "_pltype": "parameter",
@@ -797,15 +779,9 @@ SHIFT = {
                 }
               ]
             },
-        "solver_db": {
-          "_output": [
-            {
-              "_pltype": "list",
-              "_value": copy_value,
-            }
-          ]
-        },
+
             "solver": {
+              "_inlist": "hybrid_db,solver_db",
               "_output": [
                 {
                   "_pltype": "parameter",
@@ -817,6 +793,7 @@ SHIFT = {
               ]
             },
             "tolerance": {
+              "_inlist": "hybrid_db,solver_db",
               "_output": [
                 {
                   "_pltype": "parameter",
@@ -828,6 +805,7 @@ SHIFT = {
               ]
             },
             "k_tolerance": {
+              "_inlist": "hybrid_db,solver_db",
               "_output": [
                 {
                   "_pltype": "parameter",
@@ -839,6 +817,7 @@ SHIFT = {
               ]
             },
             "subspace_size": {
+              "_inlist": "hybrid_db,solver_db",
               "_output": [
                 {
                   "_pltype": "parameter",
@@ -850,6 +829,7 @@ SHIFT = {
               ]
             },
             "max_itr": {
+              "_inlist": "hybrid_db,solver_db",
               "_output": [
                 {
                   "_pltype": "parameter",
@@ -861,6 +841,7 @@ SHIFT = {
               ]
             },
             "verbosity": {
+              "_inlist": "hybrid_db,solver_db",
               "_output": [
                 {
                   "_pltype": "parameter",
@@ -872,6 +853,7 @@ SHIFT = {
               ]
             },
             "energy_dep_ev": {
+              "_inlist": "hybrid_db,solver_db",
               "_output": [
                 {
                   "_pltype": "parameter",
@@ -883,6 +865,7 @@ SHIFT = {
               ]
             },
             "partition_upscatter": {
+              "_inlist": "hybrid_db,solver_db",
               "_output": [
                 {
                   "_pltype": "parameter",
@@ -893,17 +876,12 @@ SHIFT = {
                 }
               ]
             },
-            "upscatter_db": {
-              "_output": [
-                {
-                  "_pltype": "list",
-                  "_value": copy_value,
-                }
-              ]
-            },
-                "tolerance": {
+
+                "upscatter_tolerance": {
+                  "_inlist": "hybrid_db,solver_db,upscatter_db",
                   "_output": [
                     {
+                      "_name": "tolerance",
                       "_pltype": "parameter",
                       "_type": "double",
                       # "_do":
@@ -912,9 +890,11 @@ SHIFT = {
                     }
                   ]
                 },
-                "solver": {
+                "upscatter_solver": {
+                  "_inlist": "hybrid_db,solver_db,upscatter_db",
                   "_output": [
                     {
+                      "_name": "solver",
                       "_pltype": "parameter",
                       "_type": "string",
                       # "_do":
@@ -923,9 +903,11 @@ SHIFT = {
                     }
                   ]
                 },
-                "max_itr": {
+                "upscatter_max_itr": {
+                  "_inlist": "hybrid_db,solver_db,upscatter_db",
                   "_output": [
                     {
+                      "_name": "max_itr",
                       "_pltype": "parameter",
                       "_type": "int",
                       # "_do":
@@ -934,9 +916,11 @@ SHIFT = {
                     }
                   ]
                 },
-                "subspace_size": {
+                "upscatter_subspace_size": {
+                  "_inlist": "hybrid_db,solver_db,upscatter_db",
                   "_output": [
                     {
+                      "_name": "subspace_size",
                       "_pltype": "parameter",
                       "_type": "int",
                       # "_do":
@@ -945,9 +929,11 @@ SHIFT = {
                     }
                   ]
                 },
-                "verbosity": {
+                "upscatter_verbosity": {
+                  "_inlist": "hybrid_db,solver_db,upscatter_db",
                   "_output": [
                     {
+                      "_name": "verbosity",
                       "_pltype": "parameter",
                       "_type": "string",
                       # "_do":
@@ -957,6 +943,7 @@ SHIFT = {
                   ]
                 },
                 "iterate_downscatter": {
+                  "_inlist": "hybrid_db,solver_db,upscatter_db",
                   "_output": [
                     {
                       "_pltype": "parameter",
@@ -968,6 +955,7 @@ SHIFT = {
                   ]
                 },
         "Pn_correction": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -979,6 +967,7 @@ SHIFT = {
           ]
         },
         "pin_partitioning": {
+          "_inlist": "hybrid_db",
           "_output": [
             {
               "_pltype": "parameter",
