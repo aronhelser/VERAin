@@ -3,6 +3,8 @@ from __future__ import absolute_import, division, print_function
 import pyparsing as pp
 import os, argparse
 # import Utils.flatten
+# this requires python 2.7+
+from collections import OrderedDict
 
 from Templates.CASEID import CASEID
 from Templates.STATE import STATE
@@ -410,11 +412,11 @@ class VeraInConverter(object):
     # a section card (like 'axial') causes other section cards to be ignored.
     def outputCards(self, cards, paramDict, useDict=0):
         # Collect cards that appear more than once, to be output together
-        listCards = {}
+        listCards = OrderedDict()
         # collect cards that are unique, but should be output inside a list
-        groupedCards = {}
+        groupedCards = OrderedDict()
         # all other unique cards, custom values over-write defaults
-        cardDict = {}
+        cardDict = OrderedDict()
 
         sectionName = ""
         refs = paramDict["_refs"] if "_refs" in paramDict else None
