@@ -8,7 +8,7 @@ def is_double(toks, index=None):
   # automatic converter might produce ints or floats (double-precision in python)
   if type(val) != float:
     raise ValueError("expected double got" + type(val))
-  print("verified double", val)
+  # print("verified double", val)
 
 def is_literal(toks, verifVal, index=None):
   if index == None:

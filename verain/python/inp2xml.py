@@ -64,6 +64,7 @@ class VeraInConverter(object):
         self.cellSections = {}
         self.sections = []
         self.keyWordDef = None
+        self.inFileDir = None
 
     # when a section is parsed, stick it in the appropriate list/place
     def handleSection(self, toks):
@@ -92,13 +93,31 @@ class VeraInConverter(object):
             self.keyWordDef << pp.oneOf(paramDict["_content"].keys())
             # print("DBG keywords", self.keyWordDef.expr)
 
+    def findIncFile(self, filename):
+        # search three places for a defaults file or an included file:
+        # next to the input file
+        # next to this script
+        # in the perl script Init folder, ../scripts/Init
+        paths = [self.inFileDir, scriptDir,
+            os.path.abspath(os.path.join(scriptDir, "../scripts/Init"))]
+        for path in paths:
+            fullpath = os.path.join(path, filename)
+            if os.path.isfile(fullpath):
+                return fullpath
+        return None
+
     def replaceWithFile(self, toks):
         # given a filename, replace with its contents
         filename = toks[1]
+        # print("Repl file", filename)
+        fullpath = self.findIncFile(filename)
+        if not fullpath:
+            raise ValueError("Unable to open included file, '%s'" % filename)
+
         incData = ""
         try:
-            incFile = open(os.path.join(scriptDir, "../scripts/Init", filename), "r")
-            incData = "  " + "  ".join( incFile.readlines() )
+            incFile = open(fullpath, "r")
+            incData = "  " + "  ".join( incFile.readlines() ) + "\n"
         except:
             raise ValueError("Unable to open included file, '%s'" % filename)
 
@@ -109,10 +128,14 @@ class VeraInConverter(object):
         sectionLine = "[%s] %s" % (toks[0], toks[1])
 
         filename = "%s.ini" % toks[0]
+        fullpath = self.findIncFile(filename)
+        if not fullpath:
+            return sectionLine
+
         incData = ""
         try:
-            incFile = open(os.path.join(scriptDir, "../scripts/Init", filename), "r")
-            incData = "  " + "  ".join( incFile.readlines() )
+            incFile = open(fullpath, "r")
+            incData = "  " + "  ".join( incFile.readlines() ) + "\n"
             # print("Added defaults, section:", toks[0])
         except:
             pass
@@ -192,11 +215,13 @@ class VeraInConverter(object):
             VeraInConverter.inpbnf.ignore( comment )
 
             #
-            # additional parser to include files in this file, using some of our rules
-            VeraInConverter.includebnf = (keyWordWhite + "include" + \
-              (quoteStr | pp.Word(nonsemi))).setParseAction(self.replaceWithFile) | \
-              (lbrack + sectionNamePlain + rbrack + (pp.lineEnd | pp.Combine(pp.restOfLine + pp.lineEnd))).setParseAction(self.addDefaults)
-            VeraInConverter.includebnf.ignore( comment )
+            # additional parsers to include files in this file, using some of our rules
+            # for some reason each parse action needs to be in a separate parser. Make a list.
+            VeraInConverter.includebnf = [
+                (keyWordWhite + "include" + \
+                  (quoteStr | pp.Word(nonsemi))).setParseAction(self.replaceWithFile).ignore( comment ),
+                (lbrack + sectionNamePlain + rbrack + (pp.lineEnd | pp.Combine(pp.restOfLine + pp.lineEnd))).setParseAction(self.addDefaults).ignore( comment )
+            ]
 
         return VeraInConverter.inpbnf
 
@@ -227,7 +252,7 @@ class VeraInConverter(object):
         return sectionParams
 
     # some cards need info from a different card - like a map needs a size.
-    # extract those cards that referenced by another card
+    # extract those cards that are referenced by another card
     def extractRefParams(self, cards, paramDict):
         if "refs" in paramDict:  # or not "_refParams" in paramDict:
             # already done, or nothing to do
@@ -261,10 +286,13 @@ class VeraInConverter(object):
                 if key in refs:
                     argList[i] = refs[key][int(argSplit[2])] if len(argSplit) == 3 else refs[key]
                 else:
-                    raise ValueError("Replacement arg '%s' not available" % key)
+                    # cell maps for assemblies have the 'Fuels' ref available, inserts etc don't
+                    # print("Replacement arg '%s' not available" % key)
+                    argList[i] = None
 
     def outputParam(self, name, ptype, value, optional=False):
-        # TODO this works for empty strings and integers > 0, but what about 0?
+        # Optional params that aren't available should return 'None', so other 'falsy' values
+        # like 0 can be passed as params.
         if optional and value == None:
             return
         elif type(value) == str and value == "":
@@ -287,6 +315,23 @@ class VeraInConverter(object):
                 refs[outName] = newRef
 
             # print("DBG GENREF", outName, refs[str(outName)])
+
+    def addOuputListRef(self, cardList, outSpec, outName, refs):
+        # see if we should add to refs for this list of cards
+        if refs and "_refParam" in outSpec:
+            genRefList = outSpec["_refParam"]
+            for card in cardList:
+                # add ref under the output name, not the card name.
+                newRef = genRefList[0](card[1], *genRefList[1:])
+                if not outName in refs:
+                    refs[outName] = newRef
+                elif type(refs[outName]) is set:
+                    refs[outName] |= newRef
+                else:
+                    print("Unhandled combination, replacing ", refs[outName])
+                    refs[outName] = newRef
+
+            # print("DBG GENREFLIST", outName, refs[str(outName)])
 
     def outputSingleCard(self, card, spec, paramName, refs=None):
         for outSpec in spec["_output"]:
@@ -355,6 +400,8 @@ class VeraInConverter(object):
                     self.outputListEnd(listName)
 
             self.outputListEnd(spec["_name"])
+            # add refs
+            self.addOuputListRef(listCards, spec, spec["_name"], refs)
 
     # output a list of cards.
     # Cards whose type is "parameter" or "array" are unique
@@ -523,18 +570,25 @@ class VeraInConverter(object):
             self.outputSection(section)
 
         self.outputListEnd(self.caseID[0])
+        # add a blank line at the end
+        self.outList.append('')
 
-    def parse(self, strng ):
-        print( strng)
+    def parse(self, inFilename ):
+        print( inFilename)
         tokens = None
         try:
-            iniFile = open(strng, "r")
+            iniFile = open(inFilename, "r")
+            self.inFileDir = os.path.dirname(os.path.abspath(inFilename))
             iniData = "".join( iniFile.readlines() )
             bnf = self.inpfile_BNF()
             includebnf = self.include_BNF()
-            afterIncludes = includebnf.transformString(iniData)
+            afterIncludes = iniData
+            for x in includebnf:
+                afterIncludes = x.transformString(afterIncludes)
+            # entire file contents with 'include' and defaults added:
             # print(afterIncludes)
             tokens = bnf.parseString( afterIncludes, parseAll=True)
+            # parsed tokens:
             # tokens.pprint()
 
         except pp.ParseException as err:
@@ -544,10 +598,7 @@ class VeraInConverter(object):
 
         iniFile.close()
 
-        # try:
         self.createOutput()
-        # except Exception as err:
-        #     print(err)
 
         # print("\n".join(self.outList))
         print("Done")

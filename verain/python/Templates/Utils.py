@@ -207,6 +207,16 @@ def fuel_array(toks, outKey):
   if outKey == "gad_frac":
     return gadFrac
 
+def cell_type(toks, fuelNames):
+  # first extract the material names used
+  matNames = copy_array_after_val(toks, '/')
+  # if any fuel name appears in the list, this is a fuel cell.
+  if fuelNames:
+    for fuel in fuelNames:
+      if fuel in matNames:
+        return "fuel"
+  return "other"
+
 def toCelsius(toks):
   if len(toks) != 2 or not(toks[1] in ["F", "C", "K"]):
     raise ValueError("Invalid temperature")
@@ -269,6 +279,11 @@ def extract_map_cells(toks, start):
   uniqueVals = set(vals)
   # need to make sure everything is a string, not an integer.
   return set([str(x) for x in uniqueVals])
+
+# what tags are used? Combined from a list
+def extract_tag(toks, index):
+  val = toks[index]
+  return set([str(val)])
 
 def extract_core_shape(toks):
   # we need to know the total number of '1' (occupied cells)

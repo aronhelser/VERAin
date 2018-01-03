@@ -8,7 +8,7 @@ CellMaps = {
   "_sectionParams": ["axial"],
   # "_sectionName": "Insert_%s",
   "_refParams": ["npin"],
-  "_order": ["axial", "rodmap", "cell", "fuel"],
+  "_order": ["axial", "rodmap", "fuel", "cell"],
   "_content": {
 #   _do:
 #     - setdb MAIN_DB
@@ -62,6 +62,14 @@ CellMaps = {
           "_type": "int",
           # match length of mats array.
           "_value": [len_array_after_val, '/'],
+        },
+        {
+          "_name": "type",
+          "_pltype": "parameter",
+          "_type": "string",
+          # "_do":
+          #  - value (_lgrid)
+          "_value": [cell_type, "ref:Fuels"],
         },
       ]
     },

@@ -5,16 +5,6 @@ from Templates.Verify import *
 
 MPACT = {
   "_content": {
-    "include": {
-      "_output": [
-        {
-          "_pltype": "parameter",
-          "_type": "string",
-          # TODO include file contents
-          "_value": copy_value,
-        }
-      ]
-    },
     "ray_spacing": {
       "_output": [
         {
@@ -347,12 +337,7 @@ MPACT = {
       # "_do":
       #  - mpact_db db_entry_,MPACT/%db_entry/*
       "_output": [
-        {
-          "_name": "path",
-          "_pltype": "parameter",
-          "_type": "string",
-          "_value": [copy_value, 0],
-        },
+        # path is only output as part of the _listName
         # skip a '/'
         {
           "_name": "type",

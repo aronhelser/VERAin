@@ -8,7 +8,7 @@ from Templates.CellMaps import CellMaps
 _assemblyDiff = {
   "_groupName": "ASSEMBLIES",
   "_sectionName": "Assembly_%s",
-  "_order": ["axial", "lattice", "rodmap", "cell", "fuel"],
+  "_order": ["axial", "lattice", "rodmap", "fuel", "cell"],
 }
 
 ASSEMBLY = copy.deepcopy(CellMaps)
@@ -21,6 +21,8 @@ _assemblyContentDiff = {
       "_pltype": "list",
       "_name": "Fuels",
       "_listName": "Fuel_%s",
+      # extract a list of fuel names, to be compared against cell definitions.
+      "_refParam": [extract_tag, 0],
       "_output": [
         {
           "_name": "key_name",
