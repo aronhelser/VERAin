@@ -76,9 +76,10 @@ STATE = {
         }
       ]
     },
-    "xenopt": {
+    "xenon": {
       "_output": [
         {
+          "_name": "xenopt",
           "_pltype": "parameter",
           "_type": "string",
           # "_do":
@@ -109,25 +110,23 @@ STATE = {
         }
       ]
     },
-    "bank_labels": {
+    "rodbank": {
       "_output": [
         {
+          "_name": "bank_labels",
           "_pltype": "array",
           "_type": "string",
           # "_do":
           #   - copyarray %STATE/$(_loop)/@rodbank,select=>even
-          "_value": copy_value,
-        }
-      ]
-    },
-    "bank_pos": {
-      "_output": [
+          "_value": [copy_array, slice(0, None, 2)],
+        },
         {
+          "_name": "bank_pos",
           "_pltype": "array",
           "_type": "int",
           # "_do":
           #   - copyarray %STATE/$(_loop)/@rodbank,select=>odd
-          "_value": copy_value,
+          "_value": [copy_array, slice(1, None, 2)],
         }
       ]
     },
@@ -149,18 +148,15 @@ STATE = {
           "_type": "double",
           # "_do":
           #   - copy %STATE/$(_loop)/$"b10":0
-          "_value": copy_value,
-        }
-      ]
-    },
-    "b10_depl": {
-      "_output": [
+          "_value": [copy_value, 0],
+        },
         {
+          "_name": "b10_depl",
           "_pltype": "parameter",
           "_type": "bool",
           # "_do":
           #   - copy %STATE/$(_loop)/$"b10":1
-          "_value": copy_value,
+          "_value": [copy_value, 1],
         }
       ]
     },
@@ -182,7 +178,7 @@ STATE = {
           "_type": "double",
           # "_do":
           #   - copy %STATE/$(_loop)/$pressure,apply=>($_[0])*0.00689475729
-          "_value": copy_value,
+          "_value": [copy_value_mult, 0, 0.00689475729],
         }
       ]
     },
@@ -226,18 +222,15 @@ STATE = {
           "_type": "double",
           # "_do":
           #   - copyarray %STATE/$(_loop)/@deplete,start=>1
-          "_value": copy_value,
-        }
-      ]
-    },
-    "deplete_units": {
-      "_output": [
+          "_value": [copy_array, slice(1, None)],
+        },
         {
+          "_name": "deplete_units",
           "_pltype": "parameter",
           "_type": "string",
           # "_do":
           #   - copy %STATE/$(_loop)/@"deplete":0
-          "_value": copy_value,
+          "_value": [copy_value, 0],
         }
       ]
     },
@@ -303,7 +296,7 @@ STATE = {
           "_type": "double",
           # "_do":
           #   - tocelsius %STATE/$(_loop)/@thexp_tfuel,apply=>($_[0]+273.15)
-          "_value": copy_value,
+          "_value": toKelvin,
         }
       ]
     },
@@ -314,7 +307,7 @@ STATE = {
           "_type": "double",
           # "_do":
           #   - tocelsius %STATE/$(_loop)/@thexp_tclad,apply=>($_[0]+273.15)
-          "_value": copy_value,
+          "_value": toKelvin,
         }
       ]
     },
@@ -325,7 +318,7 @@ STATE = {
           "_type": "double",
           # "_do":
           #   - tocelsius %STATE/$(_loop)/@thexp_tmod,apply=>($_[0]+273.15)
-          "_value": copy_value,
+          "_value": toKelvin,
         }
       ]
     },
@@ -362,69 +355,63 @@ STATE = {
         }
       ]
     },
-    "restart_shuffle_file": {
+    "restart_shuffle": {
       "_output": [
         {
+          "_name": "restart_shuffle_file",
           "_pltype": "array",
           "_type": "string",
           # "_do":
           #   - copyarray %STATE/$(_loop)/@restart_shuffle,select=>even
-          "_value": copy_value,
-        }
-      ]
-    },
-    "restart_shuffle_label": {
-      "_output": [
+          "_value": [copy_array, slice(0, None, 2)],
+        },
         {
+          "_name": "restart_shuffle_label",
           "_pltype": "array",
           "_type": "string",
           # "_do":
           #   - copyarray %STATE/$(_loop)/@restart_shuffle,select=>odd
-          "_value": copy_value,
+          "_value": [copy_array, slice(1, None, 2)],
         }
       ]
     },
-    "restart_write_file": {
+    "restart_write": {
       "_output": [
         {
+          "_name": "restart_write_file",
           "_pltype": "parameter",
           "_type": "string",
           # "_do":
           #   - copy %STATE/$(_loop)/@"restart_write":0
-          "_value": copy_value,
-        }
-      ]
-    },
-    "restart_write_label": {
-      "_output": [
+          "_value": [copy_value, 0],
+        },
         {
+          "_name": "restart_write_label",
           "_pltype": "parameter",
           "_type": "string",
           # "_do":
           #   - copy %STATE/$(_loop)/@"restart_write":1
-          "_value": copy_value,
+          "_value": [copy_value, 1],
         }
       ]
     },
-    "restart_read_file": {
+    "restart_read": {
       "_output": [
         {
+          "_name": "restart_read_file",
           "_pltype": "parameter",
           "_type": "string",
           # "_do":
           #   - copy %STATE/$(_loop)/@"restart_read":0
-          "_value": copy_value,
-        }
-      ]
-    },
-    "restart_read_label": {
-      "_output": [
+          "_value": [copy_value, 0],
+        },
         {
+          "_name": "restart_read_label",
           "_pltype": "parameter",
           "_type": "string",
           # "_do":
           #   - copy %STATE/$(_loop)/@"restart_read":1
-          "_value": copy_value,
+          "_value": [copy_value, 1],
         }
       ]
     },
@@ -472,58 +459,47 @@ STATE = {
         }
       ]
     },
-    "h_conc": {
+    "cool_chem": {
       "_output": [
         {
+          "_name": "h_conc",
           "_pltype": "parameter",
           "_type": "double",
           # "_do":
           #   - copy %STATE/$(_loop)/$"cool_chem":0
-          "_value": copy_value,
-        }
-      ]
-    },
-    "li_conc": {
-      "_output": [
+          "_value": [copy_value, 0],
+        },
         {
+          "_name": "li_conc",
           "_pltype": "parameter",
           "_type": "double",
           # "_do":
           #   - copy %STATE/$(_loop)/$"cool_chem":1
-          "_value": copy_value,
-        }
-      ]
-    },
-    "ni_sol": {
-      "_output": [
+          "_value": [copy_value, 1],
+        },
         {
+          "_name": "ni_sol",
           "_pltype": "parameter",
           "_type": "double",
           # "_do":
           #   - copy %STATE/$(_loop)/$"cool_chem":2
-          "_value": copy_value,
-        }
-      ]
-    },
-    "ni_par": {
-      "_output": [
+          "_value": [copy_value, 2],
+        },
         {
+          "_name": "ni_par",
           "_pltype": "parameter",
           "_type": "double",
           # "_do":
           #   - copy %STATE/$(_loop)/$"cool_chem":3
-          "_value": copy_value,
-        }
-      ]
-    },
-    "fe_sol": {
-      "_output": [
+          "_value": [copy_value, 3],
+        },
         {
+          "_name": "fe_sol",
           "_pltype": "parameter",
           "_type": "double",
           # "_do":
           #   - copy %STATE/$(_loop)/$"cool_chem":4
-          "_value": copy_value,
+          "_value": [copy_value, 4],
         }
       ]
     },

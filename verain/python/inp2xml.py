@@ -12,6 +12,12 @@ from Templates.ASSEMBLIES import ASSEMBLY
 from Templates.INSERTS import INSERT
 from Templates.CONTROLS import CONTROL
 from Templates.DETECTORS import DETECTOR
+from Templates.SHIFT import SHIFT
+from Templates.MPACT import MPACT
+from Templates.COBRATF import COBRATF
+from Templates.INSILICO import INSILICO
+
+scriptDir = os.path.dirname(os.path.abspath(__file__))
 
 def convertNum(tokens):
     val = tokens[0]
@@ -31,11 +37,11 @@ class VeraInConverter(object):
         "INSERT": INSERT,
         "EDITS": EDITS,
         "COUPLING": CASEID,
-        "SHIFT": CASEID,
         # Simulator code config blocks
-        "COBRATF": CASEID,
-        "INSILICO": CASEID,
-        "MPACT": CASEID,
+        "SHIFT": SHIFT,
+        "COBRATF": COBRATF,
+        "INSILICO": INSILICO,
+        "MPACT": MPACT,
         "BISON": CASEID,
         "MAMBA1D": CASEID,
         "TIAMAT": CASEID
@@ -44,6 +50,7 @@ class VeraInConverter(object):
     cellSectionNames = ["ASSEMBLY", "CONTROL", "DETECTOR", "INSERT"]
     keywordSpace = 2
     inpbnf = None
+    includebnf = None
 
     def __init__(self):
         # keep things neat - track # of spaces indented as lists are added/closed
@@ -56,6 +63,8 @@ class VeraInConverter(object):
         self.states = []
         self.cellSections = {}
         self.sections = []
+        self.keyWordDef = None
+        self.inFileDir = None
 
     # when a section is parsed, stick it in the appropriate list/place
     def handleSection(self, toks):
@@ -76,6 +85,64 @@ class VeraInConverter(object):
             self.sections.append(section)
             # Possibly pre-process the tokens so we can extract global info, like maps.
 
+    def handleSectionName(self, toks):
+        sectionName = toks[0]
+        # Set keywords that this section can parse. Must be set before values are parsed.
+        if self.keyWordDef:
+            paramDict = VeraInConverter.sectionNames[sectionName]
+            self.keyWordDef << pp.oneOf(paramDict["_content"].keys())
+            # print("DBG keywords", self.keyWordDef.expr)
+
+    def findIncFile(self, filename):
+        # search three places for a defaults file or an included file:
+        # next to the input file
+        # next to this script
+        # in the perl script Init folder, ../scripts/Init
+        paths = [self.inFileDir, scriptDir,
+            os.path.abspath(os.path.join(scriptDir, "../scripts/Init"))]
+        for path in paths:
+            fullpath = os.path.join(path, filename)
+            if os.path.isfile(fullpath):
+                return fullpath
+        return None
+
+    def replaceWithFile(self, toks):
+        # given a filename, replace with its contents
+        filename = toks[1]
+        # print("Repl file", filename)
+        fullpath = self.findIncFile(filename)
+        if not fullpath:
+            raise ValueError("Unable to open included file, '%s'" % filename)
+
+        incData = ""
+        try:
+            incFile = open(fullpath, "r")
+            incData = "  " + "  ".join( incFile.readlines() ) + "\n"
+        except:
+            raise ValueError("Unable to open included file, '%s'" % filename)
+
+        return incData
+
+    def addDefaults(self, toks):
+        # print("Got section:", toks[0], toks[1])
+        sectionLine = "[%s] %s" % (toks[0], toks[1])
+
+        filename = "%s.ini" % toks[0]
+        fullpath = self.findIncFile(filename)
+        if not fullpath:
+            return sectionLine
+
+        incData = ""
+        try:
+            incFile = open(fullpath, "r")
+            incData = "  " + "  ".join( incFile.readlines() ) + "\n"
+            # print("Added defaults, section:", toks[0])
+        except:
+            pass
+        if incData:
+            return sectionLine + incData
+        return sectionLine
+
     def inpfile_BNF(self):
         if not VeraInConverter.inpbnf:
             # allow us to detect separate lines, but still ignore space between words
@@ -89,7 +156,7 @@ class VeraInConverter(object):
             EOL = pp.LineEnd().suppress()
             nonsemi = "".join( [ c for c in pp.printables if c != ";" ] )
 
-            # ignore comments completely
+              # ignore comments completely
             comment = pp.Literal("!") + pp.Optional( pp.restOfLine )
 
             # numbers
@@ -103,36 +170,76 @@ class VeraInConverter(object):
                                    pp.Optional( e + integer )
                                  ).setParseAction(convertNum)
 
+            # we don't want to keep the quotes around a quoted title or name
             quoteStr = pp.quotedString.addParseAction(pp.removeQuotes)
+            # maps accept a shortcut, size*val
+            mapProductDef = number.setParseAction(convertNum) + pp.Literal("*") + pp.Word(nonsemi)
 
-            # keywords start an input card, two space indent
-            keyWordDef = pp.Word( pp.alphas, pp.alphanums + "_" )
-            spaceKeyWordDef = pp.White(" ", exact=VeraInConverter.keywordSpace).suppress() + keyWordDef
-            # values or value lists, or indented sections complete the card
-            valueDef = (quoteStr | pp.ZeroOrMore( floatnumber | pp.Word(nonsemi) ))
+            # keywords start an input card, two+ space indent.
+            # Acceptible keywords defined by the section we are in, filled by handleSectionName()
+            self.keyWordDef = pp.Forward()  # allowed: pp.Word( pp.alphas, pp.alphanums + "_" )
+            keyWordWhite = pp.White(" ", min=VeraInConverter.keywordSpace).suppress()
+            spaceKeyWordDef = keyWordWhite + self.keyWordDef
+
+            # values, value lists, or indented value lists complete the card
+            # can't exclude keywords here, 'boron' is both a keyword and value.
+            # also use '^', to make sure we get the longest match, for tags like '80IFBA'
+            valueDef = (quoteStr | mapProductDef | pp.ZeroOrMore( floatnumber ^ pp.Word(nonsemi) ))
             valueDefEOL = valueDef + pp.OneOrMore(EOL)
             valueDefSemi = valueDef + semi
-            # must be indented more than the keywords.
-            indentedValueDef = pp.White(" ", min=(VeraInConverter.keywordSpace+1)).suppress() + valueDefEOL
-            cardDef = pp.Group( spaceKeyWordDef + pp.Group(valueDefEOL + pp.Optional( pp.OneOrMore(pp.Group(indentedValueDef))) ) )
+            # values must be indented more than the keywords, and not be a keyword.
+            valueWhite = pp.White(" ", min=(VeraInConverter.keywordSpace+1)).suppress()
+            indentedValueDef = valueWhite + ~self.keyWordDef + valueDefEOL
+
+            singleCardDef = pp.Group( spaceKeyWordDef + pp.Group(valueDefEOL + pp.Optional( pp.OneOrMore(pp.Group(indentedValueDef))) ) )
             # special handling for semi-separated-list of cards on one line for [STATE] blocks
-            inlineCardDefSemi = pp.Group( keyWordDef + pp.Group(valueDefSemi) )
-            inlineCardDefEOL = pp.Group( keyWordDef + pp.Group(valueDefEOL) )
+            inlineCardDefSemi = pp.Group( self.keyWordDef + pp.Group(valueDefSemi) )
+            inlineCardDefEOL = pp.Group( self.keyWordDef + pp.Group(valueDefEOL) )
 
             # section header complicated by possible inline cards on the same line.
-            sectionHeader = lbrack + pp.oneOf( VeraInConverter.sectionNames.keys() ) + rbrack + \
+            sectionNamePlain = pp.oneOf( VeraInConverter.sectionNames.keys() )
+            sectionNameDef = sectionNamePlain.setParseAction(self.handleSectionName)
+            sectionHeader = lbrack + sectionNameDef + rbrack + \
                 ( (pp.ZeroOrMore(inlineCardDefSemi | semi) + inlineCardDefEOL) | pp.ZeroOrMore(EOL) )
 
-            # using Dict will allow retrieval of named data fields as attributes of the parsed results
-            # this is a problem with [STATE] blocks, which can occur more than once.
-            sectionDef = pp.Group( sectionHeader + pp.Dict( pp.ZeroOrMore( cardDef ) ) ^ EOL).setParseAction(
+            # card def is complicated by possible inline cards on the same line
+            cardDef = singleCardDef | (pp.OneOrMore(inlineCardDefSemi | semi) + inlineCardDefEOL)
+
+            # using pp.Dict would allow retrieval of named data fields as attributes of the parsed results
+            # this is a problem with [STATE] and cell-map blocks, which can occur more than once.
+            sectionDef = pp.Group( sectionHeader + pp.ZeroOrMore( cardDef ) | EOL).setParseAction(
                 self.handleSection
             )
-            VeraInConverter.inpbnf = pp.Dict( pp.OneOrMore( sectionDef ) )
+            VeraInConverter.inpbnf = pp.OneOrMore( sectionDef )
 
-            VeraInConverter.inpbnf.ignore( comment)
+            VeraInConverter.inpbnf.ignore( comment )
+
+            #
+            # additional parsers to include files in this file, using some of our rules
+            # for some reason each parse action needs to be in a separate parser. Make a list.
+            VeraInConverter.includebnf = [
+                (keyWordWhite + "include" + \
+                  (quoteStr | pp.Word(nonsemi))).setParseAction(self.replaceWithFile).ignore( comment ),
+                (lbrack + sectionNamePlain + rbrack + (pp.lineEnd | pp.Combine(pp.restOfLine + pp.lineEnd))).setParseAction(self.addDefaults).ignore( comment )
+            ]
 
         return VeraInConverter.inpbnf
+
+    def include_BNF(self):
+        if not VeraInConverter.inpbnf:
+            self.inpfile_BNF()
+        return VeraInConverter.includebnf
+
+    # verify that this card's contents are as expected.
+    # data types, length, format, etc.
+    def verifyCard(self, card, spec):
+        # call methods specified that verify this card's content
+        for checkItem in spec["_check"]:
+            if type(checkItem) == list:
+                # first item is method to call, the rest are args.
+                checkItem[0](card[1], *checkItem[1:])
+            else:
+                checkItem(card[1])
 
     # extract cards that trigger a section ParameterList in the output.
     def extractSectionParams(self, cards, paramDict):
@@ -145,7 +252,7 @@ class VeraInConverter(object):
         return sectionParams
 
     # some cards need info from a different card - like a map needs a size.
-    # extract those cards that referenced by another card
+    # extract those cards that are referenced by another card
     def extractRefParams(self, cards, paramDict):
         if "refs" in paramDict:  # or not "_refParams" in paramDict:
             # already done, or nothing to do
@@ -174,22 +281,69 @@ class VeraInConverter(object):
                 argSplit = arg.split(":")
                 key = argSplit[1]
                 # import ipdb; ipdb.set_trace()
+                # print("replaceRefArgs", key, refs)
                 # taking the indicated value of the card there's a second colon, else get whole array for maps.
-                argList[i] = refs[key][int(argSplit[2])] if len(argSplit) == 3 else refs[key]
+                if key in refs:
+                    argList[i] = refs[key][int(argSplit[2])] if len(argSplit) == 3 else refs[key]
+                else:
+                    # cell maps for assemblies have the 'Fuels' ref available, inserts etc don't
+                    # print("Replacement arg '%s' not available" % key)
+                    argList[i] = None
 
-    def outputParam(self, name, ptype, value):
+    def outputParam(self, name, ptype, value, optional=False):
+        # Optional params that aren't available should return 'None', so other 'falsy' values
+        # like 0 can be passed as params.
+        if optional and value == None:
+            return
+        elif type(value) == str and value == "":
+            raise ValueError("Non-optional parameter '%s' with empty value" % name)
         self.outList.append('%s<Parameter name="%s" type="%s" value="%s"/>' % (
             " " * self.indent, name, ptype, value) )
+
+    def addOuputRef(self, card, outSpec, outName, refs):
+        # see if we should add to refs for this output
+        if refs and "_refParam" in outSpec:
+            genRefList = outSpec["_refParam"]
+            # add ref under the output name, not the card name.
+            newRef = genRefList[0](card[1], *genRefList[1:])
+            if not outName in refs:
+                refs[outName] = newRef
+            elif type(refs[outName]) is set:
+                refs[outName] |= newRef
+            else:
+                print("Unhandled combination, replacing ", refs[outName])
+                refs[outName] = newRef
+
+            # print("DBG GENREF", outName, refs[str(outName)])
+
+    def addOuputListRef(self, cardList, outSpec, outName, refs):
+        # see if we should add to refs for this list of cards
+        if refs and "_refParam" in outSpec:
+            genRefList = outSpec["_refParam"]
+            for card in cardList:
+                # add ref under the output name, not the card name.
+                newRef = genRefList[0](card[1], *genRefList[1:])
+                if not outName in refs:
+                    refs[outName] = newRef
+                elif type(refs[outName]) is set:
+                    refs[outName] |= newRef
+                else:
+                    print("Unhandled combination, replacing ", refs[outName])
+                    refs[outName] = newRef
+
+            # print("DBG GENREFLIST", outName, refs[str(outName)])
 
     def outputSingleCard(self, card, spec, paramName, refs=None):
         for outSpec in spec["_output"]:
             # "_name" is an override for the input paramName
             outName = outSpec["_name"] if "_name" in outSpec else paramName
-            # type is modified for arrays
+            # output type is modified for arrays
             if "_type" in outSpec:
                 outType = outSpec["_type"] if outSpec["_pltype"] != "array" else "Array(%s)" % outSpec["_type"]
             else:
                 outType = "none"
+            # allow optional output, if array can have values tacked on the end.
+            optionalFlag = "_optional" in outSpec and outSpec["_optional"]
             if outSpec["_pltype"] == "parameter" or outSpec["_pltype"] == "array":
                 if type(outSpec["_value"]) == list:
                     # make a copy
@@ -199,25 +353,15 @@ class VeraInConverter(object):
                         self.replaceRefArgs(genValueList, refs)
 
                     # first item is method to call, the rest are args.
-                    self.outputParam( outName, outType, genValueList[0](card[1], *genValueList[1:]))
+                    self.outputParam( outName, outType, genValueList[0](card[1], *genValueList[1:]), optionalFlag)
                 else:
-                    self.outputParam( outName, outType, outSpec["_value"](card[1]))
-                # see if we should add to refs for this output
-                if refs and "_refParam" in outSpec:
-                    genRefList = outSpec["_refParam"]
-                    # add ref under the output name, not the card name.
-                    newRef = genRefList[0](card[1], *genRefList[1:])
-                    if not outName in refs:
-                        refs[outName] = newRef
-                    elif type(refs[outName]) is set:
-                        refs[outName] |= newRef
-                    else:
-                        print("Unhandled combination, replacing ", refs[outName])
-                        refs[outName] = newRef
-
-                    print("GENREF", outName, refs[str(outName)])
+                    # the only item is a method to call, like copy_value
+                    self.outputParam( outName, outType, outSpec["_value"](card[1]), optionalFlag)
+                # add refs
+                self.addOuputRef(card, outSpec, outName, refs)
             else:
-                print("TODO", outName, outSpec["_pltype"])
+                # this shouldn't get hit, because we've already handled lists
+                raise ValueError("Unexpected parameter type, '%s', for '%s'" % (outSpec["_pltype"], outName))
 
     # Should we output this card? Does it have a "_condition" that needs to be true?
     def shouldOutputCard(self, card, spec, paramDict, refs):
@@ -231,8 +375,17 @@ class VeraInConverter(object):
 
         return True
 
+    # Output a list, with the inner params from one or more cards, extracted and grouped.
+    def outputCardList(self, listCards, listName, paramDict, refs, useDict):
+        # outer list, examples in MPACT or SHIFT
+        self.outputListStart(listName)
+        # these cards were extracted into a dict, so we don't want to extract this level again,
+        # this time we output this level normally.
+        self.outputCards(listCards, paramDict, useDict+1)
+        self.outputListEnd(listName)
+
     # Output a list of lists, with the inner lists derived from a single input card.
-    def outputCardList(self, listCards, paramDict, refs):
+    def outputCardListOfLists(self, listCards, paramDict, refs):
         paramName = listCards[0][0]
         if paramName in paramDict["_content"]:
             spec = paramDict["_content"][paramName]
@@ -247,12 +400,25 @@ class VeraInConverter(object):
                     self.outputListEnd(listName)
 
             self.outputListEnd(spec["_name"])
+            # add refs
+            self.addOuputListRef(listCards, spec, spec["_name"], refs)
 
-    def outputCards(self, cards, paramDict):
-        listCards = []
-        listParamName = ""
+    # output a list of cards.
+    # Cards whose type is "parameter" or "array" are unique
+    # Earlier values are replaced by later values - allows for inclusion of defaults
+    # Lists are collected together, and output together
+    # a section card (like 'axial') causes other section cards to be ignored.
+    def outputCards(self, cards, paramDict, useDict=0):
+        # Collect cards that appear more than once, to be output together
+        listCards = {}
+        # collect cards that are unique, but should be output inside a list
+        groupedCards = {}
+        # all other unique cards, custom values over-write defaults
+        cardDict = {}
+
         sectionName = ""
         refs = paramDict["_refs"] if "_refs" in paramDict else None
+
         # if there is a section card avail, make sure other section cards aren't output.
         if "_section" in paramDict:
             sectionKey = paramDict["_section"][1][0]
@@ -261,27 +427,49 @@ class VeraInConverter(object):
             paramName = card[0]
             if paramName in paramDict["_content"]:
                 spec = paramDict["_content"][paramName]
-                # lists - see if any existing cardlist has terminated and needs to be output.
-                if listCards and (not ("_pltype" in spec and spec["_pltype"] == "list") or listParamName != paramName):
-                    # handle the saved list of cards as a list.
-                    self.outputCardList(listCards, paramDict, refs)
-                    # reset the cardList
-                    listCards = []
-                    listParamName = ""
+                # verify the conents of the card, first
+                if "_check" in spec:
+                    self.verifyCard(card, spec)
 
                 # lists - gather cards first.
-                if "_pltype" in spec and spec["_pltype"] == "list":
-                    listParamName = paramName
-                    listCards.append(card)
+                # for embedded list, e.g. "graph" in "parallel_env",
+                #   get the list names first.
+                dictKeys = None
+                if "_inlist" in spec:
+                    dictKeys = spec["_inlist"].split(",")
+                # gather separate cards into a list. Pick out list key for this level.
+                if dictKeys and len(dictKeys) > useDict:
+                    dictKey = dictKeys[useDict]
+                    if not dictKey in groupedCards:
+                        groupedCards[dictKey] = []
+                    groupedCards[dictKey].append(card)
+                    # one case (e.g. "Np") needs to duplicate output, not in list, too.
+                    if "_notInList" in spec["_output"][0] and spec["_output"][0]["_notInList"]:
+                        cardDict[paramName] = (card, spec, paramName)
+                # single card type gathered, outputing list-of-list
+                # (careful, might be inside a grouping list, like "pinmesh" in "mesh")
+                elif "_pltype" in spec and spec["_pltype"] == "list":
+                    if not paramName in listCards:
+                        listCards[paramName] = []
+                    listCards[paramName].append(card)
+                # keep if it's not a section card, or if it is a section card, and the key matches.
                 elif paramName != sectionName or card[1][0] == sectionKey:
-                    # output if it's not a section card, or if it is a section card, and the key matches.
-                    self.outputSingleCard(card, spec, paramName, refs)
+                    # over-write earlier entries with later entries
+                    cardDict[paramName] = (card, spec, paramName)
             else:
-                print("TODO", paramName, card[1][0] )
+                # this shouldn't get hit, because of keyword lists for sections.
+                raise ValueError("Unexpected card name, '%s', with tag '%s'" % (paramName, card[1][0]))
 
-        # if we're done and we still have a card list, output it.
-        if listCards:
-            self.outputCardList(listCards, paramDict, refs)
+        # output single cards, sorting is futile, since this isn't the output name.
+        for dictKey in sorted(cardDict.keys()):
+            card, spec, paramName = cardDict[dictKey]
+            self.outputSingleCard(card, spec, paramName, refs)
+        # output any list-of-lists.
+        for dictKey in listCards:
+            self.outputCardListOfLists(listCards[dictKey], paramDict, refs)
+        # output any cards grouped into lists
+        for dictKey in groupedCards:
+            self.outputCardList(groupedCards[dictKey], dictKey, paramDict, refs, useDict)
 
 
     # Start and end a list, sets indent for contents.
@@ -292,10 +480,11 @@ class VeraInConverter(object):
         self.indent -= 2
         self.outList.append('%s</ParameterList>' % (" " * self.indent))
 
-    def outputSection(self, section, inSectionName=None, ordered=None):
+    def outputSection(self, section, inSectionName=None):
         sectionName = inSectionName if inSectionName else section[0]
 
         paramDict = VeraInConverter.sectionNames[section[0]]
+        ordered = paramDict["_order"] if "_order" in paramDict else None
         # if we are called outside outputCellSection (like for CORE), add our own refs
         addedRefs = self.extractRefParams(section, paramDict)
         cardList = section[1:]
@@ -339,13 +528,12 @@ class VeraInConverter(object):
                 # Extract cards that might be referenced by other cards
                 self.extractRefParams(outerSection, paramDict)
 
-                ordered = paramDict["_order"] if "_order" in paramDict else None
-                self.outputSection(outerSection, sectionName, ordered)
+                self.outputSection(outerSection, sectionName)
 
                 # make sure we remove section-specific refs.
                 self.removeRefParams(paramDict)
-
-            del paramDict["_section"]
+            if "_section" in paramDict:
+                del paramDict["_section"]
 
         self.outputListEnd(groupName)
 
@@ -382,15 +570,25 @@ class VeraInConverter(object):
             self.outputSection(section)
 
         self.outputListEnd(self.caseID[0])
+        # add a blank line at the end
+        self.outList.append('')
 
-    def parse(self, strng ):
-        print( strng)
+    def parse(self, inFilename ):
+        print( inFilename)
         tokens = None
         try:
-            iniFile = open(strng, "r")
+            iniFile = open(inFilename, "r")
+            self.inFileDir = os.path.dirname(os.path.abspath(inFilename))
             iniData = "".join( iniFile.readlines() )
             bnf = self.inpfile_BNF()
-            tokens = bnf.parseString( iniData, parseAll=True)
+            includebnf = self.include_BNF()
+            afterIncludes = iniData
+            for x in includebnf:
+                afterIncludes = x.transformString(afterIncludes)
+            # entire file contents with 'include' and defaults added:
+            # print(afterIncludes)
+            tokens = bnf.parseString( afterIncludes, parseAll=True)
+            # parsed tokens:
             # tokens.pprint()
 
         except pp.ParseException as err:
@@ -400,10 +598,7 @@ class VeraInConverter(object):
 
         iniFile.close()
 
-        # try:
         self.createOutput()
-        # except Exception as err:
-        #     print(err)
 
         # print("\n".join(self.outList))
         print("Done")

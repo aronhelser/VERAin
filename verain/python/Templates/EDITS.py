@@ -63,36 +63,28 @@ EDITS = {
         }
       ]
     },
-    # "edit_group": {
-    #   "_output": [
-    #     {
-    #       "_pltype": "list",
-    #       # "_do":
-
-    #       "edit_group_name": {
-    #         "_output": [
-    #           {
-    #             "_pltype": "parameter",
-    #             "_type": "string",
-    #             # "_do":
-    #             #  - value (_loop)
-    #             "_value": copy_value,
-    #           }
-    #         ]
-    #       },
-    #       "edit_vars": {
-    #         "_output": [
-    #           {
-    #             "_pltype": "array",
-    #             "_type": "string",
-    #             # "_do":
-    #             #  - copyarray EDITS/%edit_group/$(_loop)
-    #             "_value": copy_array,
-    #           }
-    #         ]
-    #       },
-    #     }
-    #   ]
-    # }
+    "edit_group": {
+      "_pltype": "list",
+      "_name": "edit_group",
+      "_listName": "%s",
+      "_output": [
+        {
+          "_name": "edit_group_name",
+          "_pltype": "parameter",
+          "_type": "string",
+          # "_do":
+          #  - value (_loop)
+          "_value": [copy_value, 0],
+        },
+        {
+          "_name": "edit_vars",
+          "_pltype": "array",
+          "_type": "string",
+          # "_do":
+          #  - copyarray EDITS/%edit_group/$(_loop)
+          "_value": [copy_array, slice(1, None)],
+        },
+      ]
+    }
   }
 }

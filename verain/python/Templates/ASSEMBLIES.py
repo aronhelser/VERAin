@@ -8,7 +8,7 @@ from Templates.CellMaps import CellMaps
 _assemblyDiff = {
   "_groupName": "ASSEMBLIES",
   "_sectionName": "Assembly_%s",
-  "_order": ["axial", "lattice", "cell"],
+  "_order": ["axial", "lattice", "rodmap", "fuel", "cell"],
 }
 
 ASSEMBLY = copy.deepcopy(CellMaps)
@@ -21,6 +21,8 @@ _assemblyContentDiff = {
       "_pltype": "list",
       "_name": "Fuels",
       "_listName": "Fuel_%s",
+      # extract a list of fuel names, to be compared against cell definitions.
+      "_refParam": [extract_tag, 0],
       "_output": [
         {
           "_name": "key_name",
@@ -38,7 +40,36 @@ _assemblyContentDiff = {
           "_name": "thden",
           "_pltype": "parameter",
           "_type": "double",
-          "_value": [copy_value, 2],
+          "_optional": True,
+          "_value": [fuel_array, "thden"],
+        },
+        {
+          "_name": "fuel_names",
+          "_pltype": "array",
+          "_type": "string",
+          "_optional": True,
+          "_value": [fuel_array, "fuel_names"],
+        },
+        {
+          "_name": "enrichments",
+          "_pltype": "array",
+          "_type": "double",
+          "_optional": True,
+          "_value": [fuel_array, "enrichments"],
+        },
+        {
+          "_name": "gad_mat",
+          "_pltype": "parameter",
+          "_type": "string",
+          "_optional": True,
+          "_value": [fuel_array, "gad_mat"],
+        },
+        {
+          "_name": "gad_frac",
+          "_pltype": "parameter",
+          "_type": "double",
+          "_optional": True,
+          "_value": [fuel_array, "gad_frac"],
         },
       ]
     },
@@ -262,5 +293,5 @@ _assemblyContentDiff = {
 }
 
 ASSEMBLY["_content"].update(_assemblyContentDiff)
-# now remove the "rodmap" entry that's duplicated as "lattice"
-del ASSEMBLY["_content"]["rodmap"]
+# Don't remove the "rodmap" entry that's duplicated as "lattice" - p10 uses 'rodmap'
+# del ASSEMBLY["_content"]["rodmap"]

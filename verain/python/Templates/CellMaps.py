@@ -8,7 +8,7 @@ CellMaps = {
   "_sectionParams": ["axial"],
   # "_sectionName": "Insert_%s",
   "_refParams": ["npin"],
-  "_order": ["axial", "rodmap", "cell"],
+  "_order": ["axial", "rodmap", "fuel", "cell"],
   "_content": {
 #   _do:
 #     - setdb MAIN_DB
@@ -62,6 +62,14 @@ CellMaps = {
           "_type": "int",
           # match length of mats array.
           "_value": [len_array_after_val, '/'],
+        },
+        {
+          "_name": "type",
+          "_pltype": "parameter",
+          "_type": "string",
+          # "_do":
+          #  - value (_lgrid)
+          "_value": [cell_type, "ref:Fuels"],
         },
       ]
     },
@@ -119,14 +127,37 @@ CellMaps = {
         }
       ]
     },
-    "Materials": {
+    "mat": {
+      "_pltype": "list",
+      "_name": "Materials",
+      "_listName": "Material_%s",
       "_output": [
         {
-          "_pltype": "list",
-          # "_do":
-          #  - matmap Material_,%ASSEMBLY/$(_path)/%mat/*
-          "_value": copy_value,
-        }
+          "_name": "key_name",
+          "_pltype": "parameter",
+          "_type": "string",
+          "_value": [copy_value, 0],
+        },
+        {
+          "_name": "density",
+          "_pltype": "parameter",
+          "_type": "double",
+          "_value": [copy_value, 1],
+        },
+        {
+          "_name": "mat_fracs",
+          "_pltype": "array",
+          "_type": "double",
+          "_optional": True,
+          "_value": [copy_array_before_val, '/', slice(3, None, 2)],
+        },
+        {
+          "_name": "mat_names",
+          "_pltype": "array",
+          "_type": "string",
+          "_optional": True,
+          "_value": [copy_array_before_val, '/', slice(2, None, 2)],
+        },
       ]
     },
     "title": {
