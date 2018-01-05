@@ -93,6 +93,11 @@ def copy_value(toks, index=0):
 def copy_value_mult(toks, index, mult):
   return toks[index] * mult
 
+def copy_value_if_not(toks, exclude, index=0):
+  if toks[index] != exclude:
+    return toks[index]
+  return None
+
 def copy_array(toks, inSlice=slice(0, None)):
   # want a comma-delimited list, surrounded by {}
   # flatten nested lists for multi-line cards
@@ -105,7 +110,7 @@ def copy_array_after_val(toks, val, inSlice=slice(0, None)):
     # grab the list after the first val we found.
     outList = outList[indices[0]+1:]
     return copy_array(outList, inSlice)
-  return ""
+  return None
 
 def copy_array_before_val(toks, val, inSlice=slice(0, None)):
   outList = flatten(toks)
@@ -294,3 +299,19 @@ def extract_core_shape(toks):
 
   totalOnes = reduce(lambda x, y: x+y, onesPerRow, 0)
   return (totalOnes, onesPerRow)
+
+# almost: [copy_array_before_val, '/', slice(3, None, 2)],
+# but we need a default of 1 if there's a name with no frac.
+def mat_fracs(toks):
+  val = '/'
+  # strip name, density
+  outList = flatten(toks)[2:]
+  indices = [i for i, j in enumerate(outList) if j == val]
+  if indices:
+    # grab the list before the first val we found.
+    outList = outList[:indices[0]]
+  # if there's only a name, the default frac is 1
+  if len(outList) == 1:
+    return copy_array([1])
+  # otherwise copy the second value in each pair.
+  return copy_array(outList, slice(1, None, 2))

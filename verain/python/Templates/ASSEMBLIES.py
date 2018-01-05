@@ -203,26 +203,29 @@ _assemblyContentDiff = {
           "_name": "gridloss_old",
           "_pltype": "parameter",
           "_type": "double",
+          "_optional": True,
           # "_do":
           #  - copy %ASSEMBLY/$(_path)/%grid/@(_lgrid)"":3
-          "_value": [copy_value, 4],
+          "_value": [copy_value_if_not, '/', 4],
         },
-        # {
-        #   "_name": "gridloss",
-        #   "_pltype": "parameter",
-        #   "_type": "double",
-        #   # "_do":
-        #   #  - copy %ASSEMBLY/$(_path)/%grid/$(_lgrid)^/$loss
-        #   "_value": copy_value,
-        # },
-        # {
-        #   "_name": "gridblock",
-        #   "_pltype": "parameter",
-        #   "_type": "double",
-        #   # "_do":
-        #   #  - copy %ASSEMBLY/$(_path)/%grid/$(_lgrid)^/$blockage
-        #   "_value": copy_value,
-        # }
+        {
+          "_name": "gridloss",
+          "_pltype": "parameter",
+          "_type": "double",
+          "_optional": True,
+          # "_do":
+          #  - copy %ASSEMBLY/$(_path)/%grid/$(_lgrid)^/$loss
+          "_value": [extract_param, "loss"],
+        },
+        {
+          "_name": "gridblock",
+          "_pltype": "parameter",
+          "_type": "double",
+          "_optional": True,
+          # "_do":
+          #  - copy %ASSEMBLY/$(_path)/%grid/$(_lgrid)^/$blockage
+          "_value": [extract_param, "blockage"],
+        }
       ]
     },
 
