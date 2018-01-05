@@ -533,7 +533,9 @@ CORE = {
           "_pltype": "array",
           "_type": "double",
           "_optional": True,
-          "_value": [copy_array_before_val, '/', slice(3, None, 2)],
+          # almost works, but sometimes we need a default frac
+          # "_value": [copy_array_before_val, '/', slice(3, None, 2)],
+          "_value": mat_fracs,
         },
         {
           "_name": "mat_names",
