@@ -7,7 +7,7 @@ from Templates.CellMaps import CellMaps
 
 _controlDiff = {
   "_groupName": "CONTROLS",
-  "_sectionName": "ControL_%s",
+  "_sectionName": "Control_%s",
 }
 
 CONTROL = copy.deepcopy(CellMaps)

@@ -275,7 +275,7 @@ INSILICO = {
           "_type": "double",
           # "_do":
           #  - copyarray INSILICO/@new_grp_bounds
-          "_value": copy_value,
+          "_value": copy_array,
         }
       ]
     },
@@ -290,9 +290,10 @@ INSILICO = {
         }
       ]
     },
-    "spn_matrix_type": {
+    "SPN_matrix_type": {
       "_output": [
         {
+          "_name": "spn_matrix_type",
           "_pltype": "parameter",
           "_type": "string",
           # "_do":
@@ -319,7 +320,9 @@ INSILICO = {
           "_value": copy_value,
         }
       ]
-    },        "quad_type": {
+    },
+        "quad_type": {
+          "_inlist": "quadrature_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -331,6 +334,7 @@ INSILICO = {
           ]
         },
         "polars_octant": {
+          "_inlist": "quadrature_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -342,6 +346,7 @@ INSILICO = {
           ]
         },
         "azimuthals_octant": {
+          "_inlist": "quadrature_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -353,6 +358,7 @@ INSILICO = {
           ]
         },
         "Sn_order": {
+          "_inlist": "quadrature_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -363,15 +369,9 @@ INSILICO = {
             }
           ]
         },
-    "solver_db": {
-      "_output": [
-        {
-          "_pltype": "list",
-          "_value": copy_value,
-        }
-      ]
-    },
+
         "solver": {
+          "_inlist": "solver_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -383,6 +383,7 @@ INSILICO = {
           ]
         },
         "tolerance": {
+          "_inlist": "solver_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -394,6 +395,7 @@ INSILICO = {
           ]
         },
         "k_tolerance": {
+          "_inlist": "solver_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -405,6 +407,7 @@ INSILICO = {
           ]
         },
         "subspace_size": {
+          "_inlist": "solver_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -416,6 +419,7 @@ INSILICO = {
           ]
         },
         "max_itr": {
+          "_inlist": "solver_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -427,6 +431,7 @@ INSILICO = {
           ]
         },
         "verbosity": {
+          "_inlist": "solver_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -438,6 +443,7 @@ INSILICO = {
           ]
         },
         "energy_dep_ev": {
+          "_inlist": "solver_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -449,6 +455,7 @@ INSILICO = {
           ]
         },
         "partition_upscatter": {
+          "_inlist": "solver_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -459,17 +466,12 @@ INSILICO = {
             }
           ]
         },
-        "upscatter_db": {
-          "_output": [
-            {
-              "_pltype": "list",
-              "_value": copy_value,
-            }
-          ]
-        },
-            "tolerance": {
+
+            "upscatter_tolerance": {
+              "_inlist": "solver_db,upscatter_db",
               "_output": [
                 {
+                  "_name": "tolerance",
                   "_pltype": "parameter",
                   "_type": "double",
                   # "_do":
@@ -478,9 +480,11 @@ INSILICO = {
                 }
               ]
             },
-            "solver": {
+            "upscatter_solver": {
+              "_inlist": "solver_db,upscatter_db",
               "_output": [
                 {
+                  "_name": "solver",
                   "_pltype": "parameter",
                   "_type": "string",
                   # "_do":
@@ -489,9 +493,11 @@ INSILICO = {
                 }
               ]
             },
-            "max_itr": {
+            "upscatter_max_itr": {
+              "_inlist": "solver_db,upscatter_db",
               "_output": [
                 {
+                  "_name": "max_itr",
                   "_pltype": "parameter",
                   "_type": "int",
                   # "_do":
@@ -500,9 +506,11 @@ INSILICO = {
                 }
               ]
             },
-            "verbosity": {
+            "upscatter_verbosity": {
+              "_inlist": "solver_db,upscatter_db",
               "_output": [
                 {
+                  "_name": "verbosity",
                   "_pltype": "parameter",
                   "_type": "string",
                   # "_do":
@@ -512,6 +520,7 @@ INSILICO = {
               ]
             },
             "iterate_downscatter": {
+              "_inlist": "solver_db,upscatter_db",
               "_output": [
                 {
                   "_pltype": "parameter",
@@ -522,15 +531,9 @@ INSILICO = {
                 }
               ]
             },
-    "silo_db": {
-      "_output": [
-        {
-          "_pltype": "list",
-          "_value": copy_value,
-        }
-      ]
-    },
+
         "silo_output": {
+          "_inlist": "silo_db",
           "_output": [
             {
               "_pltype": "parameter",
@@ -542,6 +545,7 @@ INSILICO = {
           ]
         },
         "mixing_table": {
+          "_inlist": "silo_db",
           "_output": [
             {
               "_pltype": "parameter",
