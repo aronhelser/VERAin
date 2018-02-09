@@ -4,13 +4,21 @@ Here are some instructions to help find your way.
 
 1. Run the parser
 
-  The parser is a perl script and is located in the scripts directory.  
-  Run the parser with a command line like the following:
+    The prototype parser is a python script and is located in the `python` directory. To run the parser, you should have Python installed. From the ProgressionProblems directory, you can run the parser like this:
 
-    $PATH/scripts/react2xml.pl $CASE.inp $CASE.xml
+    ```
+    python ../python/inp2xml.py --in=p9.inp --out=p9.xml
+    ```
 
-  where $PATH is the path to the directory and $CASE is base name of your
-  input file.
+    For additional information on modifying the python parser, see the [python Readme](python/Readme.md).
+
+    The legacy parser is a perl script and is located in the scripts directory.  
+    Run the parser with a command line like the following:
+
+      $PATH/scripts/react2xml.pl $CASE.inp $CASE.xml
+
+    where $PATH is the path to the directory and $CASE is base name of your
+    input file.
 
 2. Look for example cases
 
