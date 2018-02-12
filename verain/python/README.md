@@ -123,7 +123,7 @@ The most common form of nest lists is just to group some cards into a list for o
     },
 ```
 
-In this case, the parameters `automesh_bounds_min` and `automesh_bounds_max` will be output inside the ParameterList `automesh_bounds`
+In this case, the parameters `automesh_bounds_min` and `automesh_bounds_max` will be output inside the ParameterList `automesh_bounds`. Nested lists can be accomplished by listing two names, `"_inlist": "parallel_env,graph"`. A few cards have their output duplicated, both in a sublist and not. These use `"_notInList": True`.
 
 More complex is the card that results in a list-of-lists. A straightforward example is materials, specified as `mat` cards in the core or assemblies. The template, from `CellMaps.py`, is:
 
@@ -210,7 +210,7 @@ Results in output like this:
 
 ### Conditional output
 
-The `mat` processing in the previous section also illustrates how optional output works. If the template output includes `"_optional": True`, and the `_value` method returns `None`, the parameter will not be output.
+The `mat` processing in the previous section also illustrates how optional output works. If the template output includes `"_optional": True`, like the `thexp` output above, and the `_value` method returns `None`, the parameter will not be output.
 
 As an example, the `mat` card for `water`:
 
@@ -231,6 +231,8 @@ doesn't output expansion:
 ```
 
 Cards can also be output depending on the values of other cards. In `CellMaps.py`, cells are only output if they are used in rodmaps, which in turn are only output if they are used in the `axial` card for the current list item. This is accomplished through use of reference parameters (explained next) and a `_condition` entry, which calls a method which should return true if the card should be output in the current context.
+
+Finally, the `CellMaps` template includes this directive: `"_sectionParams": ["axial"]`. This tells the converter that one assembly (or detector, control, insert) should be output per `axial` card encountered. The current `axial` card then determines which rodmaps, fuels and cells are output.
 
 ### Reference params
 
@@ -263,6 +265,8 @@ Secondly, if only a piece of a card is desired, like when we need to know just t
     }
 ```
 
+It is important that the reference parameter be defined before the section that tries to use it. To ensure this, the `_order` directive is included for some templates. For instance, the `CellMap` template includes `"_order": ["axial", "rodmap", "fuel", "cell"]`. Then `axial` will be processed before `rodmap`, defining the reference parameter `axial_labels`, so that only the `rodmap`s used in the current `axial` card will be output.
+
 ### Composition
 
 Assemblies, controls, detectors and inserts all share the same cards for materials, cells, rodmaps, and axial definitions. This commonality is defined in CellMaps.py, then incorporated into the different sections like this:
@@ -287,3 +291,16 @@ ASSEMBLY["_content"].update(_assemblyContentDiff)
 ```
 
 The differences for the `ASSEMBLY` section are copied over or added to those defined in the CellMaps module.
+
+### Includes
+
+The `include` card specifies a filename to be included in the current file. The converter does this as a pre-pass, substituting the text of the include file into the input file before it is parsed. 
+
+The converter looks for the include file in three places:
+* next to the input file
+* next to the converter script file
+* in the perl script init directory, `../scripts/Init`, relative to the converter script file.
+
+### Defaults
+
+Defaults work similarly to an include card - the converter looks for an `.ini` file named after the section, like `CORE.ini`, in the same place it looks for include files. If it finds one, it substitutes the text immediately after the section header. The perl script directory includes defaults for `CORE`, `INSILICO`, `MPACT`, and `SHIFT`.
