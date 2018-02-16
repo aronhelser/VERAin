@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
 import pyparsing as pp
-import os, argparse
+import os, argparse, copy
 # import Utils.flatten
 # this requires python 2.7+
 from collections import OrderedDict
@@ -53,6 +53,7 @@ class VeraInConverter(object):
     keywordSpace = 2
     inpbnf = None
     includebnf = None
+    currentIncludeDir = None
 
     def __init__(self):
         # keep things neat - track # of spaces indented as lists are added/closed
@@ -96,22 +97,24 @@ class VeraInConverter(object):
             # print("DBG keywords", self.keyWordDef.expr)
 
     def findIncFile(self, filename):
-        # search three places for a defaults file or an included file:
-        # next to the input file
-        # next to this script
-        # in the perl script Init folder, ../scripts/Init
-        paths = [self.inFileDir, scriptDir,
+        # search four places for a defaults file or an included file:
+        # - next to the current include file, if any
+        # - next to the input file
+        # - next to this script
+        # - in the perl script Init folder, ../scripts/Init
+        # sub-directories _are_ allowed.
+        paths = [self.currentIncludeDir, self.inFileDir, scriptDir,
             os.path.abspath(os.path.join(scriptDir, "../scripts/Init"))]
         for path in paths:
-            fullpath = os.path.join(path, filename)
-            if os.path.isfile(fullpath):
-                return fullpath
+            if path:
+                fullpath = os.path.join(path, filename)
+                if os.path.isfile(fullpath):
+                    return fullpath
         return None
 
     def replaceWithFile(self, toks):
         # given a filename, replace with its contents
         filename = toks[1]
-        # print("Repl file", filename)
         fullpath = self.findIncFile(filename)
         if not fullpath:
             raise ValueError("Unable to open included file, '%s'" % filename)
@@ -122,6 +125,14 @@ class VeraInConverter(object):
             incData = "  " + "  ".join( incFile.readlines() ) + "\n"
         except:
             raise ValueError("Unable to open included file, '%s'" % filename)
+
+        print("Include file:", fullpath)
+        # Files may include other files. Allow searching next to this file, or
+        # subdirectories next to this file.
+        prevIncludeDir = self.currentIncludeDir
+        self.currentIncludeDir = os.path.dirname(fullpath)
+        incData = self.include_BNF().transformString(incData);
+        self.currentIncludeDir = prevIncludeDir
 
         return incData
 
@@ -216,18 +227,22 @@ class VeraInConverter(object):
 
             VeraInConverter.inpbnf.ignore( comment )
 
-            #
             # additional parsers to include files in this file, using some of our rules
-            # for some reason each parse action needs to be in a separate parser. Make a list.
-            VeraInConverter.includebnf = [
-                (keyWordWhite + "include" + \
-                  (quoteStr | pp.Word(nonsemi))).setParseAction(self.replaceWithFile).ignore( comment ),
-                (lbrack + sectionNamePlain + rbrack + (pp.lineEnd | pp.Combine(pp.restOfLine + pp.lineEnd))).setParseAction(self.addDefaults).ignore( comment )
-            ]
+            # for some reason each parse action needs to be in a separate parser.
+            VeraInConverter.includebnf = (
+                keyWordWhite + "include" + \
+                  (quoteStr | pp.Word(nonsemi))).setParseAction(self.replaceWithFile).ignore( comment )
+            VeraInConverter.defaultsbnf = (
+                lbrack + sectionNamePlain + rbrack + (pp.lineEnd | pp.Combine(pp.restOfLine + pp.lineEnd))).setParseAction(self.addDefaults).ignore( comment )
 
         return VeraInConverter.inpbnf
 
     def include_BNF(self):
+        if not VeraInConverter.inpbnf:
+            self.inpfile_BNF()
+        return VeraInConverter.includebnf
+
+    def defaults_BNF(self):
         if not VeraInConverter.inpbnf:
             self.inpfile_BNF()
         return VeraInConverter.includebnf
@@ -255,12 +270,12 @@ class VeraInConverter(object):
 
     # some cards need info from a different card - like a map needs a size.
     # extract those cards that are referenced by another card
-    def extractRefParams(self, cards, paramDict):
-        if "refs" in paramDict:  # or not "_refParams" in paramDict:
+    def extractRefParams(self, cards, paramDict, baseRefs=None):
+        if "_refs" in paramDict:  # or not "_refParams" in paramDict:
             # already done, or nothing to do
             return False
         refList = paramDict["_refParams"] if "_refParams" in paramDict else []
-        refParams = {}
+        refParams = copy.deepcopy(baseRefs) if baseRefs else {}
         for card in cards:
             paramName = card[0]
             # _refParams is a card-name list, like ["npins", "foo"]
@@ -272,7 +287,7 @@ class VeraInConverter(object):
         return True
 
     def removeRefParams(self, paramDict):
-        if "refs" in paramDict:
+        if "_refs" in paramDict:
             del paramDict["_refs"]
 
     # A card says it wants to use a different card's value by including a "ref:foo:index" or "ref:foo_array" arg
@@ -313,7 +328,8 @@ class VeraInConverter(object):
             elif type(refs[outName]) is set:
                 refs[outName] |= newRef
             else:
-                print("Unhandled combination, replacing ", refs[outName])
+                # import ipdb; ipdb.set_trace()
+                print("Unhandled combination, replacing", refs[outName], newRef)
                 refs[outName] = newRef
 
             # print("DBG GENREF", outName, refs[str(outName)])
@@ -330,10 +346,36 @@ class VeraInConverter(object):
                 elif type(refs[outName]) is set:
                     refs[outName] |= newRef
                 else:
-                    print("Unhandled combination, replacing ", refs[outName])
+                    print("Unhandled combination, replacing", refs[outName], newRef)
                     refs[outName] = newRef
 
             # print("DBG GENREFLIST", outName, refs[str(outName)])
+
+    def extractCoreRefs(self, section):
+        # need to extract refs from the core ahead, so states can use them.
+        sectionName = section[0]
+
+        # perform minimal walking to get ref params - just ordered cards.
+        paramDict = VeraInConverter.sectionNames[section[0]]
+        ordered = paramDict["_order"] if "_order" in paramDict else None
+        addedRefs = self.extractRefParams(section, paramDict)
+        refs = paramDict["_refs"]
+        cardList = section[1:]
+        if ordered:
+            orderedCards = []
+            for key in ordered:
+                orderedCards.extend([card for card in cardList if card[0] == key])
+            for card in orderedCards:
+                paramName = card[0]
+                if paramName in paramDict["_content"]:
+                    spec = paramDict["_content"][paramName]
+                    for outSpec in spec["_output"]:
+                        if "_pltype" in outSpec and outSpec["_pltype"] != "list":
+                            outName = outSpec["_name"] if "_name" in outSpec else paramName
+                            self.addOuputRef(card, outSpec, outName, refs)
+        if addedRefs:
+            self.removeRefParams(paramDict)
+        return refs
 
     def outputSingleCard(self, card, spec, paramName, refs=None):
         for outSpec in spec["_output"]:
@@ -482,13 +524,13 @@ class VeraInConverter(object):
         self.indent -= 2
         self.outList.append('%s</ParameterList>' % (" " * self.indent))
 
-    def outputSection(self, section, inSectionName=None):
+    def outputSection(self, section, inSectionName=None, baseRefs=None):
         sectionName = inSectionName if inSectionName else section[0]
 
         paramDict = VeraInConverter.sectionNames[section[0]]
         ordered = paramDict["_order"] if "_order" in paramDict else None
         # if we are called outside outputCellSection (like for CORE), add our own refs
-        addedRefs = self.extractRefParams(section, paramDict)
+        addedRefs = self.extractRefParams(section, paramDict, baseRefs)
         cardList = section[1:]
         # import ipdb; ipdb.set_trace()
         self.outputListStart(sectionName)
@@ -527,6 +569,7 @@ class VeraInConverter(object):
                 paramDict["_section"] = sectionCard
                 sectionKey = sectionCard[1][0]
                 sectionName = paramDict["_sectionName"] % str(sectionKey)
+
                 # Extract cards that might be referenced by other cards
                 self.extractRefParams(outerSection, paramDict)
 
@@ -552,11 +595,15 @@ class VeraInConverter(object):
         self.outputListStart(self.caseID[0])
         self.outputCards(self.caseID[1:], VeraInConverter.sectionNames[self.caseID[0]])
 
+        # Core has references used by state, and others?
+        if self.core:
+            coreRefs = self.extractCoreRefs(self.core)
+
         # States are contained in their own list, with IDs to order them
         self.outputListStart("STATES")
         statesCount = 1
         for state in self.states:
-            self.outputSection(state, "State_%d" % statesCount)
+            self.outputSection(state, "State_%d" % statesCount, coreRefs)
             statesCount += 1
         self.outputListEnd("STATES")
 
@@ -583,12 +630,14 @@ class VeraInConverter(object):
             self.inFileDir = os.path.dirname(os.path.abspath(inFilename))
             iniData = "".join( iniFile.readlines() )
             bnf = self.inpfile_BNF()
-            includebnf = self.include_BNF()
+
             afterIncludes = iniData
-            for x in includebnf:
-                afterIncludes = x.transformString(afterIncludes)
+            afterIncludes = self.include_BNF().transformString(afterIncludes)
+            afterIncludes = self.defaults_BNF().transformString(afterIncludes)
+
             # entire file contents with 'include' and defaults added:
             # print(afterIncludes)
+            # parseAll makes sure the whole file is valid and parsed.
             tokens = bnf.parseString( afterIncludes, parseAll=True)
             # parsed tokens:
             # tokens.pprint()

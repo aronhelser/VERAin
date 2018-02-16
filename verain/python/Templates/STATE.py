@@ -241,7 +241,7 @@ STATE = {
           "_type": "string",
           # "_do":
           #   - copyarray %STATE/$(_loop)/$edit
-          "_value": copy_value,
+          "_value": copy_array,
         }
       ]
     },
@@ -422,7 +422,7 @@ STATE = {
           "_type": "string",
           # "_do":
           #   - coremapmap CORE/$size,CORE/@core_shape,%STATE/$(_loop)/@shuffle_label,CORE/$bc_sym,expand=>0,ignore=>'-'
-          "_value": copy_value,
+          "_value": [core_map, "ref:size:0", "ref:shape"],
         }
       ]
     },
@@ -433,7 +433,7 @@ STATE = {
           "_type": "double",
           # "_do":
           #   - coremapmap CORE/$size,CORE/@core_shape,%STATE/$(_loop)/@tinlet_dist,CORE/$bc_sym
-          "_value": copy_value,
+          "_value": [core_map, "ref:size:0", "ref:shape"],
         }
       ]
     },
@@ -444,7 +444,7 @@ STATE = {
           "_type": "double",
           # "_do":
           #   - coremapmap CORE/$size,CORE/@core_shape,%STATE/$(_loop)/@void,CORE/$bc_sym
-          "_value": copy_value,
+          "_value": [core_map, "ref:size:0", "ref:shape"],
         }
       ]
     },
@@ -455,7 +455,7 @@ STATE = {
           "_type": "double",
           # "_do":
           #   - coremapmap CORE/$size,CORE/@core_shape,%STATE/$(_loop)/@flow_dist,CORE/$bc_sym
-          "_value": copy_value,
+          "_value": [core_map, "ref:size:0", "ref:shape"],
         }
       ]
     },

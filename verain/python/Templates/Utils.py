@@ -258,6 +258,14 @@ def core_map(toks, coreSize, coreStats, symmetry="rot"):
 
     return copy_array([val] * repeat)
 
+  # first row might be on same line as card name - need to re-org into list
+  if type(toks[0]) is str or type(toks[0]) is int:
+    firstRow = [toks[0]]
+    toks[0] = firstRow
+    for i in range(1, onesPerRow[0]):
+      if type(toks[1]) is str or type(toks[1]) is int:
+        firstRow.append(toks.pop(1))
+
   if coreSize > 1 and len(toks[0]) == 1:
     quad = octToQuadMap(toks)
   else:
@@ -274,6 +282,7 @@ def core_map(toks, coreSize, coreStats, symmetry="rot"):
       raise ValueError("Map row %d inconsistent, expect %d, got %d" % (i, len(full[i]), count))
   return copy_array(full)
 
+# Treat an assembly like a coremap, but it's completely filled in, numPins x numPins.
 def assembly_map(toks, numPins):
   stats = (numPins, [numPins] * numPins)
   return core_map(toks[1:], numPins, stats)

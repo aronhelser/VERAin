@@ -170,6 +170,15 @@ MPACT = {
         }
       ]
     },
+    "rst_compress": {
+      "_output": [
+        {
+          "_pltype": "parameter",
+          "_type": "string",
+          "_value": copy_value,
+        }
+      ]
+    },
     "vis_edits": {
       "_output": [
         {
