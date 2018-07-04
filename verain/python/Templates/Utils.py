@@ -56,12 +56,12 @@ def quadToFullMap(a, symmetry):
   if symmetry == "rot":
     # drop the first row, which after transposition is a duplicate
     # of the bottom-right's first column
-    bottom_right = transpose(a[:0:-1])
+    bottom_left = transpose(a[:0:-1])
   else:
-    bottom_right = [list(row)[:0:-1] for row in a]
+    bottom_left = [list(row)[:0:-1] for row in a]
   # mirror symmetry - make reversed copies of quad
   # drop the duplicate center elem, reverse
-  bottom = [list(bottom_right[i]) + list(a[i]) for i in range(len(a))]
+  bottom = [list(bottom_left[i]) + list(a[i]) for i in range(len(a))]
   if symmetry == "rot":
     # to get a rotated version, we need to reverse both rows and columns,
     # dropping the duplicate
